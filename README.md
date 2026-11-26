@@ -19,3 +19,5 @@ Code for the outreach CRM: the live app, its sandbox, and the design work for it
 ## Keeping the two in step
 
 `crm/index.html` and `sandbox/index.html` share the same app code. The sandbox adds dummy data, a movable clock and test hooks, and sets `QSINCE=''` so every conducted meeting goes through qualification; the live CRM sets `QSINCE` to the go-live date of deal qualification so meetings conducted before it keep their stage. Change both files together and republish both artifacts.
+
+In progress: the merged Meetings and qualification page (qualify a meeting inline, right under it) is in the sandbox only. The live CRM still uses the separate qualify page until it is approved.
