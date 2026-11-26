@@ -735,7 +735,7 @@ async function saveStatus(id,cell){const p=S.mpend[id],c=getC(id);if(!p||!c)retu
   else{cm.push({t:now,x:'Meeting cancelled by the client. Moved back to the outreach list.'},...said);patch={cancelledAt:t,lostAt:t,warmDoneAt:'',mtgStatus:'',stage:'Follow-up',stageLocked:false,recur:null,nextStep:'',nextStepDate:'',meetingNext:'',snoozeUntil:'',comments:cm}}}
  else{const d=cell.querySelector('[data-mdate]').value;if(!d){flash('Pick a date.');return}
   if(p.st==='Conducted'){if(d>t){flash('A conducted meeting needs a date on or before today.');return}cm.push({t:now,x:'Meeting conducted on '+fmt(d)+'.'});
-   await upd(id,{mtgStatus:'Conducted',stage:c.stage==='Proposal'?'Proposal':'Meeting conducted',stageLocked:true,meetingDate:d,meetingNext:'',nextStep:'',nextStepDate:'',comments:cm});
+   await upd(id,{mtgStatus:'Conducted',stage:c.stage==='Proposal'?'Proposal':'Meeting conducted',stageLocked:true,meetingDate:d,meetingNext:'',nextStep:'',nextStepDate:'',...(DSTAGE.includes(c.dealStage)?{}:{qualPending:true}),comments:cm});
    if(![...S.meet.values()].some(m=>m.c===id&&m.date===d))await setMeeting(id,c,d);delete S.mpend[id];
    if(!DSTAGE.includes(c.dealStage)){qGo(id,{date:d});flash('Marked conducted. Qualify it: ICP fit and whether the deal is worth pushing.');return}
    S.sel=id;flash('Marked conducted. Add a comment on how it went to get the next-step suggestion.');render();return}
@@ -754,8 +754,10 @@ const DOPEN=['Discovery','Next meeting','Proposal','Negotiation','On hold'];
 const DSTG={Discovery:'Meeting conducted','Next meeting':'Meeting conducted','On hold':'Meeting conducted',Lost:'Meeting conducted',Proposal:'Proposal',Negotiation:'Proposal',Won:'Proposal'};
 const DCOLS=['To qualify',...DSTAGE];
 const isDeal=c=>inMtg(c)&&mStat(c)==='Conducted';
-const needsQual=c=>isDeal(c)&&!DSTAGE.includes(c.dealStage);
-const dStage=c=>DSTAGE.includes(c.dealStage)?c.dealStage:(isDeal(c)?'To qualify':(c.stage==='Proposal'?'Proposal':'Discovery'));
+// meetings marked conducted before QSINCE keep their old default stage; newer ones must be qualified
+const QSINCE='';
+const needsQual=c=>isDeal(c)&&!DSTAGE.includes(c.dealStage)&&(!!c.qualPending||(c.meetingDate||'')>=QSINCE);
+const dStage=c=>DSTAGE.includes(c.dealStage)?c.dealStage:needsQual(c)?'To qualify':(c.stage==='Proposal'?'Proposal':'Discovery');
 const lostCoolN=()=>Math.min(730,Math.max(1,+R().lostCool||40));
 const dealLost=c=>isDeal(c)&&dStage(c)==='Lost';
 const lostMeet=c=>dealLost(c)||mStat(c)==='Cancelled by client'||(!!c.cancelledAt&&!c.mtgStatus&&!['Meeting scheduled','Meeting conducted','Proposal'].includes(c.stage));
@@ -921,7 +923,7 @@ async function qSave(id){const c=getC(id);if(!c)return;if(isDNC(c)){flash('This 
  let k=0;const ts=()=>new Date(Date.now()+(k++)).toISOString(),cm=[...(c.comments||[])];
  if(!(mStat(c)==='Conducted'&&c.meetingDate===f.date))cm.push({t:ts(),x:'Meeting conducted on '+fmt(f.date)+'.'});
  cm.push({t:ts(),x:'Qualification: '+qText(f)+' · fit '+fit+'/10. Outcome: '+QOL(f)+'.'});
- const base={qual,meetingDate:f.date,meetingNext:'',stageLocked:true};let patch,msg,item=null;
+ const base={qual,meetingDate:f.date,meetingNext:'',stageLocked:true,qualPending:false};let patch,msg,item=null;
  if(f.out==='deal'){if(note)cm.push({t:ts(),x:note});
   patch={...base,mtgStatus:'Conducted',stage:DSTG[f.dstage],dealStage:f.dstage,dealStageAt:t,lostAt:'',warmDoneAt:'',snoozeUntil:'',snoozeWhy:'',nextCallManual:f.ncd||''};if(dv!==null){patch.dealValue=dv;patch.dealValueAt=t}
   if(f.act==='call'){Object.assign(patch,{myReachOut:mx(c.myReachOut,t),calls:(c.calls||0)+1,callOutcome:f.callOut,lastChannel:'Call'});item={ch:'Call',k:'Call',s:f.callOut+' · after the qualification'}}
@@ -1106,7 +1108,7 @@ async function fixEmail(id,val){const ne=String(val||'').trim().toLowerCase();if
  delete nd.movedTo;if(c.stage==='Bounced'){nd.stage=eCnt(c)?'Follow-up':'Emailed';nd.stageLocked=false}
  try{await S.db.doc('contacts/'+ne).set(nd);if(S.c.has(id))await S.db.doc('contacts/'+id).update({movedTo:ne});else await S.db.doc('contacts/'+id).set({movedTo:ne,name:c.name||'',account:c.account||''});if(S.sel===id)S.sel=ne;flash('Email updated for '+(c.name||'contact')+'. They are back on the email list.')}catch(e){denied(e)}}
 async function stageTo(id,st){const c=getC(id);if(!c)return;const patch={stage:st,stageLocked:true};if(!['Meeting scheduled','Meeting conducted','Proposal'].includes(st)&&['Conducted','Scheduled','Rescheduled'].includes(c.mtgStatus||mStat(c)))patch.mtgStatus='';
- if(st==='Meeting conducted'){const d=c.meetingDate||today();patch.meetingDate=d;await upd(id,patch);if(![...S.meet.values()].some(m=>m.c===id&&m.date===d))await setMeeting(id,c,d);return}
+ if(st==='Meeting conducted'){const d=c.meetingDate||today();patch.meetingDate=d;if(!DSTAGE.includes(c.dealStage))patch.qualPending=true;await upd(id,patch);if(![...S.meet.values()].some(m=>m.c===id&&m.date===d))await setMeeting(id,c,d);return}
  if(['Meeting conducted','Proposal'].includes(c.stage)&&st!=='Proposal'&&c.meetingDate){for(const [k,m] of S.meet)if(m.c===id&&m.date===c.meetingDate&&!m.auto){try{await S.db.doc('meetings/'+k).delete()}catch(e){denied(e)}}}
  await upd(id,patch)}
 // ---------- events
