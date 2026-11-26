@@ -735,7 +735,7 @@ async function saveStatus(id,cell){const p=S.mpend[id],c=getC(id);if(!p||!c)retu
   else{cm.push({t:now,x:'Meeting cancelled by the client. Moved back to the outreach list.'},...said);patch={cancelledAt:t,lostAt:t,warmDoneAt:'',mtgStatus:'',stage:'Follow-up',stageLocked:false,recur:null,nextStep:'',nextStepDate:'',meetingNext:'',snoozeUntil:'',comments:cm}}}
  else{const d=cell.querySelector('[data-mdate]').value;if(!d){flash('Pick a date.');return}
   if(p.st==='Conducted'){if(d>t){flash('A conducted meeting needs a date on or before today.');return}cm.push({t:now,x:'Meeting conducted on '+fmt(d)+'.'});
-   await upd(id,{mtgStatus:'Conducted',stage:c.stage==='Proposal'?'Proposal':'Meeting conducted',stageLocked:true,meetingDate:d,meetingNext:'',nextStep:'',nextStepDate:'',...(DSTAGE.includes(c.dealStage)?{}:{qualPending:true}),comments:cm});
+   await upd(id,{mtgStatus:'Conducted',stage:c.stage==='Proposal'?'Proposal':'Meeting conducted',stageLocked:true,meetingDate:d,meetingNext:'',nextStep:'',nextStepDate:'',dealRemoved:false,...(DSTAGE.includes(c.dealStage)?{}:{qualPending:true}),comments:cm});
    if(![...S.meet.values()].some(m=>m.c===id&&m.date===d))await setMeeting(id,c,d);delete S.mpend[id];
    if(!DSTAGE.includes(c.dealStage)){qGo(id,{date:d});flash('Marked conducted. Qualify it: ICP fit and whether the deal is worth pushing.');return}
    S.sel=id;flash('Marked conducted. Add a comment on how it went to get the next-step suggestion.');render();return}
@@ -753,7 +753,7 @@ const DSTAGE=['Discovery','Next meeting','Proposal','Negotiation','On hold','Won
 const DOPEN=['Discovery','Next meeting','Proposal','Negotiation','On hold'];
 const DSTG={Discovery:'Meeting conducted','Next meeting':'Meeting conducted','On hold':'Meeting conducted',Lost:'Meeting conducted',Proposal:'Proposal',Negotiation:'Proposal',Won:'Proposal'};
 const DCOLS=['To qualify',...DSTAGE];
-const isDeal=c=>inMtg(c)&&mStat(c)==='Conducted';
+const isDeal=c=>inMtg(c)&&mStat(c)==='Conducted'&&!c.dealRemoved;
 // meetings marked conducted before QSINCE keep their old default stage; newer ones must be qualified
 const QSINCE='';
 const needsQual=c=>isDeal(c)&&!DSTAGE.includes(c.dealStage)&&(!!c.qualPending||(c.meetingDate||'')>=QSINCE);
@@ -923,7 +923,7 @@ async function qSave(id){const c=getC(id);if(!c)return;if(isDNC(c)){flash('This 
  let k=0;const ts=()=>new Date(Date.now()+(k++)).toISOString(),cm=[...(c.comments||[])];
  if(!(mStat(c)==='Conducted'&&c.meetingDate===f.date))cm.push({t:ts(),x:'Meeting conducted on '+fmt(f.date)+'.'});
  cm.push({t:ts(),x:'Qualification: '+qText(f)+' · fit '+fit+'/10. Outcome: '+QOL(f)+'.'});
- const base={qual,meetingDate:f.date,meetingNext:'',stageLocked:true,qualPending:false};let patch,msg,item=null;
+ const base={qual,meetingDate:f.date,meetingNext:'',stageLocked:true,qualPending:false,dealRemoved:false};let patch,msg,item=null;
  if(f.out==='deal'){if(note)cm.push({t:ts(),x:note});
   patch={...base,mtgStatus:'Conducted',stage:DSTG[f.dstage],dealStage:f.dstage,dealStageAt:t,lostAt:'',warmDoneAt:'',snoozeUntil:'',snoozeWhy:'',nextCallManual:f.ncd||''};if(dv!==null){patch.dealValue=dv;patch.dealValueAt=t}
   if(f.act==='call'){Object.assign(patch,{myReachOut:mx(c.myReachOut,t),calls:(c.calls||0)+1,callOutcome:f.callOut,lastChannel:'Call'});item={ch:'Call',k:'Call',s:f.callOut+' · after the qualification'}}
@@ -1080,6 +1080,7 @@ function drawer(){const id=S.sel,c=getC(id),el=document.getElementById('drawer')
  ${inMtg(c)?`<div class="fl"><label>Meeting status</label>${mStatCell(c)}</div><div class="fl"><label>Next step</label>${nsCell(c)}</div>`:''}${isDeal(c)?`<div class="row2"><div class="fl"><label>Deal stage</label>${dStageCell(c)}</div><div class="fl"><label>Deal value (USD)</label>${dValCell(c)}</div></div>`:''}
  ${(isDeal(c)||c.qual)&&!isDNC(c)?`<div class="note"><b>Qualification:</b> ${c.qual?esc(fmt(istDay(c.qual.at))+' · '+qText(c.qual)+' · fit '+(c.qual.fit||0)+'/10 · '+QOL(c.qual))+(c.qual.out==='later'&&c.qual.until?' · back on your suggestions '+esc(fmtY(c.qual.until)):''):'not qualified yet'}<div style="margin-top:6px"><button class="${needsQual(c)?'p':''}" data-qgo="${esc(id)}">${needsQual(c)?'Qualify this deal':'Open qualification'}</button></div></div>`:''}
  ${c.qual&&isDNC(c)&&c.qual.out==='noticp'?`<div class="sub">Qualified as not ICP on ${esc(fmt(istDay(c.qual.at)))}.</div>`:''}
+ ${isDNC(c)?'':c.dealRemoved?`<div class="note">Removed from the Deals page${c.dealRemovedAt?' on '+esc(fmt(c.dealRemovedAt)):''}. The contact, comments and meeting history are kept. <button class="w" data-dreadd="${esc(id)}">Put back on Deals</button></div>`:isDeal(c)?`<details><summary>Remove from the Deals page</summary><div class="sub">For duplicates or meetings that are not a deal. The contact, comments and meeting history stay, and you can put it back.</div><button class="dn w" data-drm="${esc(id)}">Remove from Deals</button></details>`:''}
  <div class="fl"><textarea id="cmIn" rows="3" placeholder="What happened, what they said, what you agreed…" aria-label="New comment"></textarea></div><button class="p w" id="cmAdd">Add comment</button>
  <ul class="tl">${(c.comments||[]).slice().reverse().map(x=>`<li><b>${esc(fmt(istDay(x.t)))}</b> ${esc(istTime(x.t))} IST<span class="t" style="color:var(--ink)">${esc(x.x)}</span></li>`).join('')||'<li class="empty">No comments yet.</li>'}</ul>
  <h2 style="margin-top:16px">Log a touch</h2><div class="row2"><div class="fl"><label for="lD">Date reached out</label><input type="date" id="lD" value="${esc(t)}" max="${t}" aria-label="Date reached out"></div><div class="fl"><label for="lC">Channel</label><select id="lC"><option>Call</option><option>LinkedIn</option><option>Email</option></select></div></div>
@@ -1120,6 +1121,7 @@ document.addEventListener('click',async e=>{{const k=e.target.closest('[data-qfi
  const b=e.target.closest('button,[data-open]');if(!b)return;
  if(b.dataset.qgo){const qc=getC(b.dataset.qgo);qGo(b.dataset.qgo,b.dataset.qpick&&qc&&mStat(qc)==='Conducted'&&!needsQual(qc)?{date:today()}:{});return}
  if(b.dataset.qsave){await qSave(b.dataset.qsave);return}
+ if(b.dataset.drm||b.dataset.dreadd){const id2=b.dataset.drm||b.dataset.dreadd,c2=getC(id2),rm=!!b.dataset.drm;if(!c2)return;if(await upd(id2,{dealRemoved:rm,dealRemovedAt:rm?today():'',comments:[...(c2.comments||[]),{t:new Date().toISOString(),x:rm?'Removed from the Deals page.':'Put back on the Deals page.'}]}))flash((c2.name||'Lead')+(rm?' removed from Deals. The contact and history stay.':' is back on Deals.'));return}
  if(b.dataset.qlog){S.qLog=!S.qLog;render();if(S.qLog)requestAnimationFrame(()=>{const q=document.getElementById('qPick');if(q)q.focus()});return}
  if(b.dataset.open){S.sel=b.dataset.open;drawer();return}
  if(b.id==='more'){S.limit+=200;render();return}
