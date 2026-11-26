@@ -1,12 +1,12 @@
 # Outreach CRM
 
-Version 1. Repository: https://github.com/Vviyas20/Outreach-CRM
+Version 2 (calendar popup on every date field, Ospra look in live). Repository: https://github.com/Vviyas20/Outreach-CRM
 
 Code for the outreach CRM: the live app, its sandbox, and the design work for its new look.
 
 | Folder | What it is |
 | --- | --- |
-| `crm/` | The live Outreach CRM (single `index.html`). It runs as a claude.ai artifact: records live in the artifact's database and contacts load from `data/sheet.json`. |
+| `crm/` | The live Outreach CRM (single `index.html`, Ospra look). It runs as a claude.ai artifact: records live in the artifact's database and contacts load from `data/sheet.json`. |
 | `sandbox/` | The Outreach CRM sandbox in the Ospra look: the same app with an in-memory store, invented people and companies, a movable clock and view-only mode. Open `index.html` directly in a browser. |
 | `sandbox/previous-look/` | The sandbox before the Ospra restyle (identical logic, original coral and ink styling). |
 | `design-styles/` | Four Ospra-based UI/UX directions for the CRM (focus queue, pipeline board, line monitor, account passport). Standalone HTML, see its README. |
