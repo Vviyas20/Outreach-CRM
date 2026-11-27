@@ -123,6 +123,24 @@ details summary{cursor:pointer;color:var(--mute);font-size:13px;margin-top:10px}
 .kcard .kv{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;font:400 22px/1 var(--serif);letter-spacing:-.01em;font-variant-numeric:tabular-nums}.kcard .kv.no{color:var(--mute);font:500 13px var(--sans)}
 .kcard .kv .chip{font:500 11.5px var(--mono);background:var(--t100);color:var(--mute)}
 .kempty{border:1px dashed var(--t300);border-radius:12px;padding:16px;color:var(--mute);font-size:13px;text-align:center}
+.kpis>.kpi.w2{grid-column:span 2}@media(max-width:600px){.kpis>.kpi.w2{grid-column:auto}}
+.kcol.kq{background:var(--soft);box-shadow:inset 0 0 0 1px var(--brand100)}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:16px;align-items:start}
+.qgrid .fl select,.qgrid .fl textarea{width:100%}
+.fl.qkey label{color:var(--ink)}.fl.qkey select{border-color:var(--g)}
+.qopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px;margin:4px 0 12px}
+.qopt{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:start;align-content:start;padding:12px 14px;border:1px solid var(--hair2);border-radius:var(--rs);cursor:pointer;background:var(--card);transition:border-color .15s,background .15s}
+.qopt:hover{border-color:var(--t300)}.qopt input{grid-row:span 2;margin:3px 0 0;min-height:0;padding:0;width:16px;height:16px;accent-color:var(--g)}
+.qopt b{font-weight:600}.qopt .t{grid-column:2}
+.qopt.on{border-color:var(--g);background:var(--brand50)}.qopt.warn.on{border-color:var(--warn);background:#FBECEA}
+.note.qwarn{background:#FBECEA;border-color:#F3C9C4}
+.qpick{display:grid;gap:6px;margin-top:10px}
+.qinline{background:var(--soft);border:1px solid var(--brand100);border-radius:var(--r);padding:16px;margin:2px 0 10px}
+.qinline>h2{margin:0}.qinline .panel{border-color:var(--brand100)}
+tr.qrow td{padding:0 0 8px;border-bottom:1px solid var(--line)}tr.row.qon td{background:var(--brand50)}
+.stack tr.qrow td{padding-inline-start:0!important}.stack tr.qrow td::before{display:none}
+.qinline td select,.qinline select,.qinline input,.qinline textarea{max-width:none;font-size:16px;min-height:38px}.qinline .usd input{width:120px;min-height:34px}.qinline input[type=radio]{min-height:0}
+.qpk{display:flex;flex-direction:column;align-items:flex-start;text-align:left;border-radius:12px;padding:10px 14px;font-weight:500;width:100%}.qpk b{font-weight:600}
 @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .enter>*{animation:rise .3s cubic-bezier(.2,.8,.2,1) both}.enter>*:nth-child(2){animation-delay:.04s}.enter>*:nth-child(3){animation-delay:.08s}.enter>*:nth-child(4){animation-delay:.12s}.enter>*:nth-child(n+5){animation-delay:.16s}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -206,8 +224,16 @@ const MS=['Proposal','Negotiation','Discovery','Next meeting','Discovery','On ho
 take('Emailed',8).forEach((c,k)=>{const md=ago(3+k*4);put(c,{stage:['Proposal','Negotiation','Won'].includes(MS[k])?'Proposal':'Meeting conducted',dealStage:MS[k],dealStageAt:ago(1+k),...(MV[k]?{dealValue:MV[k]}:{}),stageLocked:true,mtgStatus:'Conducted',meetingDate:md,...hist(c,2,md<ago(10)?20:12),comments:[{t:stamp(md,18),x:'Meeting conducted on '+md+'.'},{t:stamp(md,19),x:MC[k]}]});
  meetings[(c.id+'_'+md).replace(/[^A-Za-z0-9_\-.~:@+]/g,'-')]={c:c.id,name:c.name,account:c.account,date:md,month:md.slice(0,7),auto:false,at:stamp(md,19)}});
 // lost deals: warm connect due today, warm connect later, and one held for the cool-off
-[['Deal lost: they asked us to reach out next month.',32],['Deal lost: circle back in Q2, budget resets then.',6],['Deal lost: went with a competitor.',12],['Deal lost: try again after the holidays.',20]].forEach(([x,ag])=>{const c=take('Emailed',1)[0];const md=ago(ag+10),la=ago(ag);
+[['Deal lost: they asked us to reach out next month.',32],['Deal lost: circle back in Q2, budget resets then.',6],['Deal lost: went with a competitor.',12],['Deal lost: try again after the holidays.',20],['Deal lost.',45]].forEach(([x,ag])=>{const c=take('Emailed',1)[0];const md=ago(ag+10),la=ago(ag);
  put(c,{stage:'Meeting conducted',stageLocked:true,mtgStatus:'Conducted',meetingDate:md,dealStage:'Lost',dealStageAt:la,lostAt:la,dealValue:40000,...hist(c,2,ag+20),comments:[{t:stamp(md,18),x:'Meeting conducted on '+md+'.'},{t:stamp(la,12),x}]});
+ meetings[(c.id+'_'+md).replace(/[^A-Za-z0-9_\-.~:@+]/g,'-')]={c:c.id,name:c.name,account:c.account,date:md,month:md.slice(0,7),auto:false,at:stamp(md,19)}});
+// conducted meetings waiting for qualification: every new deal starts in To qualify
+[[1,'Good first call. Strategy team is evaluating vendors this quarter and wants pricing.'],[2,'Said they are not interested right now, come back in January.'],[4,'Nice chat, but they only make bottles for the local market. Not really our ICP.'],[0,'']].forEach(([ag,x])=>{const c=take('Emailed',1)[0];const md=ago(ag);
+ put(c,{stage:'Meeting conducted',stageLocked:true,mtgStatus:'Conducted',meetingDate:md,...hist(c,2,ag+12),comments:[{t:stamp(md,ag?18:9),x:'Meeting conducted on '+md+'.'},...(x?[{t:stamp(md,ag?19:10),x}]:[])]});
+ meetings[(c.id+'_'+md).replace(/[^A-Za-z0-9_\-.~:@+]/g,'-')]={c:c.id,name:c.name,account:c.account,date:md,month:md.slice(0,7),auto:false,at:stamp(md,19)}});
+// parked after qualification ("not right now"): one back on the suggestions today, one waiting for January
+[[100,T,'',{role:'inf',need:'some',budget:'none',time:'none'}],[9,(+T.slice(0,4)+(+T.slice(5,7)>=1?1:0))+'-01-04','Not interested right now, come back in January when the new budget opens.',{role:'dm',need:'some',budget:'plan',time:'nq'}]].forEach(([ag,until,note,a])=>{const c=take('Emailed',1)[0];const md=ago(ag),qa=stamp(md,19);
+ put(c,{stage:'Nurture',stageLocked:true,meetingDate:md,dealStageAt:md,snoozeUntil:until,snoozeWhy:'Not right now: parked after the meeting',qual:{at:qa,date:md,icp:'yes',worth:'later',out:'later',until,note,fit:note?6:4,...a},...hist(c,2,ag+10),comments:[{t:stamp(md,18),x:'Meeting conducted on '+md+'.'},{t:qa,x:'Qualification: ICP yes · push: parked. Outcome: Parked.'},{t:stamp(md,20),x:'Parked: back on your suggestions on '+until+(note?'. They said: '+note:'. No timeline given.')}]});
  meetings[(c.id+'_'+md).replace(/[^A-Za-z0-9_\-.~:@+]/g,'-')]={c:c.id,name:c.name,account:c.account,date:md,month:md.slice(0,7),auto:false,at:stamp(md,19)}});
 // cancelled by the client: recurring check-ins, one with a warm connect
 take('Emailed',2).forEach((c,k)=>{const nd=k?ahead(20):T,ca=ago(k?10:30);put(c,{stage:'Nurture',stageLocked:true,mtgStatus:'Cancelled by client',cancelledAt:ca,lostAt:ca,recur:{every:30,left:3-k},nextStep:'Check in: is there an open opportunity?',nextStepDate:nd,snoozeUntil:nd,snoozeWhy:'Meeting cancelled: recurring check-in',...hist(c,2,25),comments:[{t:stamp(ca,12),x:'Meeting cancelled by the client. Recurring check-ins every 30 days, 3 times.'},...(k?[{t:stamp(ca,13),x:'Client said: reach out in Q2 after the budget reset'}]:[])]})});
@@ -244,7 +270,7 @@ const lsSet=(k,v)=>{try{LS&&LS.setItem(k,v)}catch(e){}};
 const lsDel=k=>{try{LS&&LS.removeItem(k)}catch(e){}};
 const INIT=window.__SBX_INIT||null;            // set by the automated tests
 let cfg=INIT?INIT.cfg||{}:(()=>{try{return JSON.parse(lsGet('sbx.cfg')||'{}')}catch(e){return{}}})();
-const persist=!INIT;const SEEDV='live-2026-11-26-v2';
+const persist=!INIT;const SEEDV='live-2026-11-26-v3-qualify';
 
 // ---------- clock
 let OFF=0;
@@ -309,6 +335,48 @@ window.SBX={
 })();
 
 </script>
+<style>
+/* Calendar popup for every date field: opens on click, past or future dates per field */
+input[type=date],input[type=month]{cursor:pointer;padding-right:32px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235A5A64' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5h16v15H4zM4 10h16M9 3v4M15 3v4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;background-size:16px}
+input[type=date]::-webkit-calendar-picker-indicator,input[type=month]::-webkit-calendar-picker-indicator{display:none}
+input[type=date][aria-expanded=true],input[type=month][aria-expanded=true]{border-color:var(--g);box-shadow:0 0 0 3px color-mix(in srgb,var(--g) 18%,transparent)}
+.cal{position:fixed;z-index:70;width:304px;background:var(--card,#fff);color:var(--ink,#111);border:1px solid var(--line,#ddd);border-radius:16px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 18px 44px rgba(17,17,17,.2);padding:12px 12px 10px;font-size:14px;line-height:1.3;animation:calIn .14s ease-out}
+@keyframes calIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.cal{animation:none}}
+.cal button{font:inherit;color:inherit;background:none;border:0;min-height:0;padding:0;cursor:pointer;border-radius:10px;box-shadow:none}
+.cal button:focus-visible{outline:2px solid var(--g);outline-offset:1px}
+.cal-h{display:flex;align-items:center;gap:4px;margin-bottom:8px}
+.cal-t{flex:1;font-weight:700;font-size:15px;padding:7px 8px!important;text-align:left}
+.cal-t span{font-weight:500;color:var(--mute);font-size:12px;margin-left:6px}
+.cal-t:hover,.cal-nav:hover{background:var(--mist)}
+.cal-nav{width:36px;height:36px;display:grid;place-items:center;font-size:19px;line-height:1}
+.cal-q{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.cal-q button{border:1px solid var(--line)!important;border-radius:999px;padding:5px 10px!important;font-size:12.5px;font-weight:600;white-space:nowrap}
+.cal-q button:hover{border-color:var(--g)!important;color:var(--g)}
+.cal-q button.on{background:var(--g);border-color:var(--g)!important;color:var(--cal-on,#fff)}
+.cal-w,.cal-g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
+.cal-w span{font-size:11px;font-weight:600;color:var(--mute);text-align:center;padding:2px 0 4px}
+.cal-g button{height:36px;position:relative;font-variant-numeric:tabular-nums;font-weight:500}
+.cal-g button:hover:not(:disabled):not(.sel){background:var(--mist)}
+.cal-g .wk{color:var(--mute)}
+.cal-g .oth{opacity:.4}
+.cal-g .td{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.cal-g .sel,.cal-m .sel{background:var(--g);color:var(--cal-on,#fff);font-weight:700}
+.cal-g .hol::after{content:'';position:absolute;left:50%;bottom:4px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--warn,#b42318)}
+.cal-g .sel.hol::after{background:var(--cal-on,#fff)}
+.cal-g button:disabled,.cal-m button:disabled{opacity:.25;cursor:not-allowed}
+.cal-m{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.cal-m button{height:46px;font-weight:600}
+.cal-m button:hover:not(:disabled):not(.sel){background:var(--mist)}
+.cal-m .td{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.cal-f{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;color:var(--mute)}
+.cal-f i{font-style:normal;display:inline-flex;align-items:center;gap:5px}.cal-f i::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--warn,#b42318)}
+.cal-f button{font-weight:600;color:var(--g)!important;padding:6px 8px!important}
+.cal-f button:hover{background:var(--mist)}
+.cal.sheet{left:0!important;right:0;bottom:0;top:auto!important;width:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(14px + env(safe-area-inset-bottom));animation:calUp .18s ease-out}
+@keyframes calUp{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.cal.sheet .cal-g button{height:44px}.cal.sheet .cal-m button{height:52px}
+</style>
 </head>
 <body>
 <style>
@@ -351,8 +419,7 @@ window.SBX={
   <div class="brand"><div class="logo">VV</div><div><b>Outreach CRM</b><small>Sandbox · invented data</small></div></div>
   <nav id="tabs" aria-label="CRM pages">
     <a href="#today" data-v="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v15H4zM4 10h16M9 3v4M15 3v4"/></svg>Today</a>
-    <a href="#meetings" data-v="meetings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7a4 4 0 1 0 8 0a4 4 0 1 0-8 0M3 21c1-4 5-6 9-6s8 2 9 6"/></svg>Meetings</a>
-    <a href="#deals" data-v="deals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h4v16H4zM10 4h4v10h-4zM16 4h4v6h-4z"/></svg>Deals</a>
+    <a href="#deals" data-v="deals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h4v16H4zM10 4h4v10h-4zM16 4h4v6h-4z"/></svg>Deals<span id="qN" hidden title="Meetings to qualify"></span></a>
     <a href="#dashboard" data-v="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M2 20h20"/></svg>Dashboard</a>
     <a href="#calls" data-v="calls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>Calls to make<span id="dueN" hidden></span></a>
     <a href="#contacts" data-v="contacts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11a4 4 0 1 0 0-8a4 4 0 1 0 0 8M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2M17 3.5a4 4 0 0 1 0 7M22 21v-2a4 4 0 0 0-3-3.8"/></svg>Contacts</a>
@@ -368,7 +435,7 @@ window.SBX={
 <aside id="drawer" aria-label="Contact details"></aside>
 <script>
 {
-const S={c:new Map(),daily:new Map(),meet:new Map(),meta:{},cfg:{},db:null,w:true,ready:false,f:{q:'',acc:'',st:'',show:'',sort:'next'},day:'',sel:null,sheet:null,merged:null,limit:200,pend:{},mpend:{},dpend:{},acc:new Map()};
+const S={c:new Map(),daily:new Map(),meet:new Map(),meta:{},cfg:{},db:null,w:true,ready:false,f:{q:'',acc:'',st:'',show:'',sort:'next'},day:'',sel:null,sheet:null,merged:null,limit:200,pend:{},mpend:{},dpend:{},acc:new Map(),qf:{},qpre:{}};
 const STAGES=['New','Contacted','Emailed','Follow-up','Called','Connected','Replied','Meeting scheduled','Meeting conducted','Proposal','Nurture','Not interested','Bounced','Left company','Do not contact'];
 const ENG=['Connected','Replied','Meeting scheduled','Meeting conducted','Proposal'];
 const OUT=['No answer','Voicemail','Gatekeeper','Spoke','Call back later','Not interested'];
@@ -386,7 +453,9 @@ const holName=t=>{const r=R(),u=r.usHolidays&&USHOL[t],i=r.inHolidays&&INHOL[t];
 const isBD=s=>{const w=D(s).getUTCDay();if(typeof S!=='undefined'&&S.cfg&&S.cfg.rules&&S.cfg.rules.skipHolidays===false)return true;const ru=(typeof S!=='undefined'&&S.cfg&&S.cfg.rules)||{};const hol=(ru.usHolidays!==false&&!!USHOL[s])||(ru.inHolidays!==false&&!!INHOL[s]);return w>0&&w<6&&!hol};
 const addBD=(s,n)=>{let d=D(s);while(n>0){d=new Date(d.getTime()+864e5);if(isBD(iso(d)))n--}return iso(d)};
 const mx=(...a)=>a.filter(Boolean).sort().pop()||'';
+const addD=(s,n)=>iso(new Date(D(s).getTime()+n*864e5));
 const fmt=s=>s?D(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'}):'';
+const fmtY=s=>s?D(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}):'';
 const monL=m=>D(m+'-01').toLocaleDateString('en-GB',{month:'short',year:'2-digit',timeZone:'UTC'});
 const WIN={USE:'8–10 PM IST · 9:30–11:30 AM ET',USC:'9–11 PM IST · 9:30–11:30 AM CT',USW:'11 PM–1 AM IST · 9:30–11:30 AM PT',LATAM:'6:30–8:30 PM IST · 10 AM–12 PM BRT',EU:'2:30–4:30 PM IST · 10 AM–12 PM CET',UK:'3:30–5:30 PM IST · 10 AM–12 PM GMT',ME:'11:30 AM–1:30 PM IST · 10 AM–12 PM GST',IN:'11 AM–1 PM IST',SEA:'7:30–9:30 AM IST · 10 AM–12 PM SGT',NEA:'6:30–8:30 AM IST · 10 AM–12 PM JST/KST'};
 const TZS=[['America/New_York','Eastern (ET)'],['America/Chicago','Central (CT)'],['America/Denver','Mountain (MT)'],['America/Phoenix','Arizona (MST)'],['America/Los_Angeles','Pacific (PT)'],['America/Mexico_City','Mexico City'],['America/Bogota','Colombia'],['America/Lima','Peru'],['America/Santiago','Chile'],['America/Argentina/Buenos_Aires','Argentina'],['America/Montevideo','Uruguay'],['America/Sao_Paulo','Brazil (BRT)'],['Europe/London','UK (GMT)'],['Europe/Berlin','Central Europe (CET)'],['Europe/Istanbul','Türkiye'],['Europe/Moscow','Moscow'],['Asia/Dubai','Gulf (GST)'],['Asia/Kolkata','India (IST)'],['Asia/Jakarta','Indonesia, Thailand'],['Asia/Singapore','Singapore, China, Taiwan'],['Asia/Tokyo','Japan, Korea'],['Australia/Sydney','Sydney']];
@@ -418,7 +487,7 @@ const synced=c=>(c.emails||0)>0||!!c.lastEmail||!!c.myReachOut||!!c.lastLinkedIn
 const slug=t=>String(t||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const nkey=n=>String(n||'').toLowerCase().replace(/[^a-z]/g,'');
 const AUTO=['New','Contacted','Emailed'];
-const RDEF={usHolidays:true,inHolidays:true,friCalls:100,emailCap:40,domainCap:25,liCap:20,emailGap:5,seqMax:4,seqPause:30,niCool:90,callMax:6,staleDays:30,oneTouch:true,oooPause:true,bounceBlocks:true,accountPause:false,skipHolidays:true,warmRule:true,warmGap:30};
+const RDEF={usHolidays:true,inHolidays:true,friCalls:100,emailCap:40,domainCap:25,liCap:20,emailGap:5,seqMax:4,seqPause:30,niCool:90,callMax:6,staleDays:30,oneTouch:true,oooPause:true,bounceBlocks:true,accountPause:false,skipHolidays:true,warmRule:true,warmGap:30,lostCool:40,laterDays:100};
 const RINFO=[['DNC suppression','Anyone marked Do not contact (by you, your sheet, or a reply asking to stop) drops off every list, and calls, emails and LinkedIn touches cannot be logged for them until you lift it.',null],
  ['Weekly channel plan','Monday: email and LinkedIn only, no calls. Tuesday to Thursday: email, LinkedIn and calls. Friday: the same plus a call blitz. Weekends: no plan. Your day runs until 4 AM IST, so a late US shift counts as the same day.',null],
  ['Outcomes and snoozes','Record an outcome on any Today row. “Reached out, no reply” logs the touch and the sequence continues. “Not interested” holds the lead for the cool-off below. “Different pitch” and “Reach out later” take a date or month (or a 3, 4 or 5-month snooze) and keep the lead off every list until then. “Do not contact” suppresses them on every channel.',null],
@@ -440,7 +509,10 @@ const RINFO=[['DNC suppression','Anyone marked Do not contact (by you, your shee
  ['bounceBlocks','Bounced address blocks email','A bounced lead stays reachable by phone and LinkedIn only.'],
  ['accountPause','Pause cold email at accounts with an active deal','When anyone at a company is at Meeting scheduled or Proposal, cold emails to others there pause.'],
  ['skipHolidays','Skip weekends and holidays','Next-call dates skip Saturdays, Sundays, US Thanksgiving and year-end holidays.'],
- ['Deals','Every conducted meeting is a deal on the Deals page, moved through Discovery, Next meeting, Proposal, Negotiation, On hold, Won or Lost. Deal value takes whole US dollars only: no cents, decimals or minus signs, up to $1,000,000,000. A lost deal leaves cold outreach and comes back only as a warm connect (below) or after the not-interested cool-off.',null],
+ ['Deals','Every conducted meeting is a deal on the Deals page, moved through Discovery, Next meeting, Proposal, Negotiation, On hold, Won or Lost. Deal value takes whole US dollars only: no cents, decimals or minus signs, up to $1,000,000,000. A lost deal leaves every list for the lost-deal cool-down (below), then comes back on the Today suggestions.',null],
+ ['Qualification','Every conducted meeting starts in To qualify on the Deals page. The qualification page asks whether the person is your ICP, their role, need, budget, timeline and whether the deal is worth pushing to the next round, then you pick one outcome. Push to deal: a stage, a value, the next call date, and a call or email logged now. Not right now: parked until the month, quarter or date in your comment, otherwise the default below, then back on the Today suggestions. Not ICP: Do not contact. Lost: held for the cool-down below, then back on the Today suggestions.',null],
+ ['laterDays','Not-right-now default (days)','When a qualification says not right now and your comment names no month, quarter or date, the lead comes back on the Today suggestions after this many days.'],
+ ['lostCool','Lost-deal cool-down (days)','A lost deal stays off every list for this many days, then comes back on the Today suggestions so you can reach out again. A reach-out-later comment that names a later date moves it out further, never earlier.'],
  ['warmRule','Warm connect after a lost meeting or deal','When a meeting is cancelled by the client or a deal is marked Lost, and your comment says to reach out later (for example “reach out at a later time”, “circle back in Q2”, “try again after the holidays”), the lead returns to the Today page as a warm connect: on the month, quarter or date you wrote, otherwise after the gap below. Until then it stays off cold lists. Do-not-contact and left-company leads never come back.'],
  ['warmGap','Warm connect gap when no date is written (days)','Days after the loss before the warm connect is due, when the comment says later but names no month, quarter or date. Kept between 7 and 365.']];
 const R=()=>({...RDEF,...(S.cfg.rules||{})});
@@ -483,7 +555,7 @@ function plan(c){const st=c.stage||'Emailed',t=today(),r=R();const mk=(d,why)=>(
  if(c.sheetNext)return mk(c.sheetNext,'Follow-up date from your sheet');
  return null}
 function merge(id,sh,db){const o2=merge0(id,sh,db);if(o2&&!(db&&db.stageLocked)&&!isDNC(o2)&&LEFTRX.test(o2.sheetStatus||'')&&!['Meeting scheduled','Meeting conducted','Proposal','Replied','Connected'].includes(o2.stage))o2.stage='Left company';return o2}
-function merge0(id,sh,db){if(db&&db.movedTo)return null;if(!db)return{id,...sh,_sheet:true};if(!sh)return{id,...db};const o={...sh,_sheet:true,_db:true};
+function merge0(id,sh,db){if(db&&db.movedTo)return null;if(db&&db.purged)return{id,...db,...(sh?{_sheet:true}:{})};if(!db)return{id,...sh,_sheet:true};if(!sh)return{id,...db};const o={...sh,_sheet:true,_db:true};
  for(const [k,v] of Object.entries(db))if(v!==''&&v!==null&&v!==undefined)o[k]=v;o.id=id;o.name=sh.name||db.name;
  const HARD=['Meeting scheduled','Meeting conducted','Proposal','Replied','Connected','Bounced','Do not contact','Left company','Not interested'];o.stage=db.stageLocked||HARD.includes(db.stage)?db.stage:(!AUTO.includes(sh.stage)?sh.stage:(db.stage||sh.stage));
  o.emails=Math.max(db.emails||0,sh.emails||0);o.firstEmail=[db.firstEmail,sh.firstEmail].filter(Boolean).sort()[0]||'';o.lastEmail=mx(db.lastEmail,sh.lastEmail);
@@ -496,16 +568,18 @@ function allMeet(){const out=[],seen=new Set();for(const [k,m] of S.meet){const 
  return out}
 const items=()=>{const a=[];for(const [d,v] of S.daily)for(const it of (v.items||[]))a.push({...it,day:d});return a};
 let raf=0;const render=()=>{if(!raf)raf=requestAnimationFrame(()=>{raf=0;draw()})};
-function view(){const h=location.hash.slice(1);if(h.startsWith('acct-'))return'acct';return['today','meetings','deals','dashboard','calls','contacts','daily','accounts','rules'].includes(h)?h:'today'}
-function draw(){const v=view();for(const a of document.querySelectorAll('nav a'))a.classList.toggle('on',a.dataset.v===v||(v==='acct'&&a.dataset.v==='accounts'));
+function view(){const h=location.hash.slice(1);if(h.startsWith('acct-'))return'acct';if(h.startsWith('qualify-'))return'qualify';if(h==='meetings')return'deals';return['today','deals','dashboard','calls','contacts','daily','accounts','rules'].includes(h)?h:'today'}
+function draw(){const v=view();for(const a of document.querySelectorAll('nav a'))a.classList.toggle('on',a.dataset.v===v||(v==='acct'&&a.dataset.v==='accounts')||(v==='qualify'&&a.dataset.v==='deals'));
  const due=contacts().filter(c=>{const p=plan(c);return p&&p.due}).length;const dn=document.getElementById('dueN');dn.hidden=!due;dn.textContent=due;
+ const qn=S.ready?contacts().filter(needsQual).length:0,qe=document.getElementById('qN');qe.hidden=!qn;qe.textContent=qn;
  const m=S.meta.run||{};document.getElementById('fresh').textContent=S.ready?('Refreshed '+(m.lastRunIST||'not yet')+(m.backfillDone?' · full email history loaded':(m.backfillThrough?' · email history loaded back to '+fmt(istDay(m.backfillThrough)):''))):'Loading data…';
  const el=document.getElementById('main');document.body.classList.toggle('ro',!S.w);
  if(!S.ready){el.innerHTML='<div class="band empty" id="ld">Loading your CRM…</div>';return}
- const html=({today:vToday,meetings:vMeetings,deals:vDeals,dashboard:vDash,calls:vCalls,contacts:()=>vContacts(''),daily:vDaily,accounts:vAcc,acct:vAccount,rules:vRules})[v]();
+ const html=({today:vToday,deals:vDeals,dashboard:vDash,calls:vCalls,contacts:()=>vContacts(''),daily:vDaily,accounts:vAcc,acct:vAccount,qualify:vQualify,rules:vRules})[v]();
  el.innerHTML=(/<h1[\s>]/.test(html)?'':`<section class="band" style="padding-bottom:0"><h1>${({dashboard:'Dashboard',calls:'Calls to make',contacts:'Contacts',daily:'Daily log',accounts:'Accounts'})[v]||''}</h1></section>`)+html;
  if(S._lv!==v+location.hash){S._lv=v+location.hash;el.classList.remove('enter');void el.offsetWidth;el.classList.add('enter');countUp(el)}
- if(v==='dashboard')charts();if(v==='acct')acctCharts();if(v==='today')freezePlan();if(S.sel)drawer()}
+ if(v==='dashboard')charts();if(v==='acct')acctCharts();if(v==='today')freezePlan();if(S.sel)drawer();
+ if(S.qScroll&&v==='deals'){S.qScroll=0;const q=document.querySelector('.qinline');if(q)q.scrollIntoView({block:'start'})}}
 function countUp(el){if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;for(const n of el.querySelectorAll('.kpi .num')){const m=n.textContent.trim().match(/^(\$?)([\d,]+)$/);if(!m)continue;const to=+m[2].replace(/,/g,''),comma=m[2].includes(',')||m[1]==='$';if(!to||to>1e10)continue;const t0=performance.now(),d=650;
  const step=now=>{const k=Math.min(1,(now-t0)/d),v=Math.round(to*(1-Math.pow(1-k,3)));n.textContent=m[1]+(comma?v.toLocaleString('en-US'):String(v));if(k<1&&n.isConnected)requestAnimationFrame(step)};requestAnimationFrame(step)}}
 function chip(st,c){if(c&&isDNC(c))return'<span class="chip dnc">Do not contact</span>';if(c&&needsEmail(c))return'<span class="chip bad">Email update needed</span>';if(c&&isDeal(c)&&dStage(c)==='Won')return'<span class="chip hot">Deal won</span>';if(c&&dealLost(c))return'<span class="chip bad">Deal lost</span>';const k=st==='Do not contact'?'dnc':ENG.includes(st)?(st.startsWith('Meeting')||st==='Proposal'?'mt':'hot'):(['Bounced','Not interested','Left company'].includes(st)?'bad':'');return`<span class="chip ${k}">${esc(st||'Emailed')}</span>`}
@@ -588,7 +662,7 @@ function vAccount(){const a=curAcc();if(!a)return'<section class="band"><div cla
  <div class="panel"><h2>Stage mix</h2><div class="sub">Click a stage to filter the leads below.</div>${STAGES.filter(s=>stC[s]).map(s=>`<div class="hb" data-st="${esc(s)}"><span>${esc(s)}</span><div class="bar"><b style="width:${stC[s]/smax*100}%" class="${s.startsWith('Meeting')||s==='Proposal'?'m':''}"></b></div><span class="v">${stC[s]}</span></div>`).join('')}</div>
  <div class="panel" style="grid-column:1/-1"><h2>Meetings</h2>${ms.length?`<table class="stack"><thead><tr><th>Who</th><th>Role</th><th>Month</th><th>Source</th><th>Deal</th></tr></thead><tbody>${ms.sort((x,y)=>y.month.localeCompare(x.month)).map(m=>`<tr class="row"><td>${m.c?`<button class="nm" data-open="${esc(m.c)}">${esc(m.name)}</button>`:esc(m.name)}${m.att?`<span class="t">with ${esc(m.att)}</span>`:''}</td><td>${esc(m.role||'')}</td><td>${esc(m.date?fmt(m.date):monL(m.month))}${m.month>t.slice(0,7)?' (upcoming)':''}</td><td>${esc({log:'Meetings log',mail:'Sent mail',crm:'Marked in CRM'}[m.src])}</td><td>${(()=>{const dc=m.c&&getC(m.c);return dc&&isDeal(dc)?esc(dStage(dc))+(Number.isInteger(dc.dealValue)?' · '+usd(dc.dealValue):''):''})()}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">No meetings yet.</div>'}</div></section>
  <section class="band"><div class="panel"><h2>Account comments and next steps</h2><div class="sub">What you know about ${esc(a)}: priorities, people, timing, open opportunities. The account's next step shows on the Today page when it is due.</div>
- <div class="row2"><input id="anS" value="${esc(ad.nextStep||'')}" placeholder="Next step for this account" aria-label="Account next step"><div class="mf" style="margin:0"><input type="date" id="anD" value="${esc(ad.nextStepDate||'')}" aria-label="Account next step date"><button class="w" id="anSave">Save next step</button></div></div>
+ <div class="row2"><input id="anS" value="${esc(ad.nextStep||'')}" placeholder="Next step for this account" aria-label="Account next step"><div class="mf" style="margin:0"><input type="date" id="anD" value="${esc(ad.nextStepDate||'')}" min="${today()}" aria-label="Account next step date"><button class="w" id="anSave">Save next step</button></div></div>
  <div class="fl"><textarea id="anIn" rows="3" placeholder="Add a note about the account…" aria-label="Account comment"></textarea></div><button class="p w" id="anAdd">Add comment</button>
  <ul class="tl">${(ad.comments||[]).slice().reverse().map(x=>`<li><b>${esc(fmt(istDay(x.t)))}</b> ${esc(istTime(x.t))} IST<span class="t" style="color:var(--ink)">${esc(x.x)}</span></li>`).join('')||'<li class="empty">No account comments yet.</li>'}</ul></div></section>
  ${vContacts(a)}`}
@@ -620,10 +694,11 @@ const mDateTxt=c=>{const st=mStat(c);if(st==='Conducted'&&!c.meetingDate&&c.shee
 const prevBD=x=>{let d=D(x);do{d=new Date(d.getTime()-864e5)}while(!isBD(iso(d)));return iso(d)};
 const MON=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 function monthDate(lx,t){const m=lx.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b/);if(!m)return'';const mi=MON.indexOf(m[1]);let y=+t.slice(0,4);if(mi<+t.slice(5,7)-1)y++;const d=nextBD(y+'-'+String(mi+1).padStart(2,'0')+'-01');return d>t?d:''}
-function suggest(c){const t=today(),st=mStat(c),cm=c.comments||[],last=cm[cm.length-1],lx=((last?last.x:'')+' '+(c.nextStep||'')).toLowerCase();
+function suggest(c){const t=today(),st=mStat(c),cm=(c.comments||[]).filter(x=>!/^Qualification: /.test(x.x||'')),last=cm[cm.length-1],lx=((last?last.x:'')+' '+(c.nextStep||'')).toLowerCase();
  const base=last?istDay(last.t):(mDate(c)&&mDate(c)<=t?mDate(c):(lastTouch(c)||t)),why=last?'From your comment “'+last.x.slice(0,70)+(last.x.length>70?'…':'')+'”':'',o=(d,txt,kind)=>({d,txt,kind,why});
  {const w=warmOf(c);if(w)return{d:w.d,txt:'Warm connect: they asked you to reach out later',kind:'warm',why:'From your comment “'+w.why.slice(0,70)+(w.why.length>70?'…':'')+'”'}}
- if(dealLost(c))return o(c.lostAt?nextBD(iso(new Date(D(c.lostAt).getTime()+R().niCool*864e5))):addBD(t,60),'Deal lost: check again for an open opportunity','reopen');
+ if(needsQual(c))return o(t,'Qualify the deal: is this person your ICP, and is it worth pushing?','qualify');
+ if(dealLost(c))return o(c.lostAt?nextBD(addD(c.lostAt,lostCoolN())):addBD(t,60),'Deal lost: cool-down over, reach out again','reopen');
  if(isDeal(c)&&dStage(c)==='Won')return o(addBD(base,20),'Deal won: plan the kickoff and an upsell check-in','won');
  if(st==='Cancelled by client')return o(c.nextStepDate||addBD(t,20),'Check in: is there an open opportunity?','checkin');
  if(st==='Scheduled'||st==='Rescheduled'){const md=c.meetingNext;if(!md)return o(t,'Add the meeting date','schedule');if(md<t)return o(t,'Meeting date has passed: mark it conducted, rescheduled or cancelled','update');const pb=prevBD(md);return o(pb<t?t:pb,'Confirm the meeting and send the agenda (meeting '+fmt(md)+')','confirm')}
@@ -642,23 +717,37 @@ const nsOf=c=>warmOf(c)?suggest(c):c.nextStepDate?{d:c.nextStepDate,txt:c.nextSt
 function mStatCell(c){const id=c.id,p=S.mpend[id],v=p?p.st:mStat(c);
  let h=`<select data-ms="${esc(id)}" aria-label="Meeting status">${MSTAT.map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('')}</select>`;
  if(p){if(p.st==='Cancelled by client')h+=`<div class="mf"><label><input type="radio" name="cx-${esc(id)}" value="recur" checked>Check in every <input type="number" data-every value="30" min="7" style="width:70px"> days, <input type="number" data-times value="3" min="1" style="width:56px"> times</label><label><input type="radio" name="cx-${esc(id)}" value="back">Back to the outreach list</label><input data-cxwhy placeholder="What did they say? e.g. reach out in Q2" aria-label="What the client said" style="min-width:210px"><button class="p w" data-msave="${esc(id)}">Save</button></div>`;
-  else h+=`<div class="mf"><input type="date" data-mdate value="${esc(p.st==='Conducted'?(c.meetingNext&&c.meetingNext<=today()?c.meetingNext:today()):'')}" aria-label="${p.st==='Conducted'?'Date conducted':'New meeting date'}"><button class="p w" data-msave="${esc(id)}">Save</button></div>`}
+  else h+=`<div class="mf"><input type="date" data-mdate value="${esc(p.st==='Conducted'?(c.meetingNext&&c.meetingNext<=today()?c.meetingNext:today()):'')}" ${p.st==='Conducted'?'max':'min'}="${today()}" aria-label="${p.st==='Conducted'?'Date conducted':'New meeting date'}"><button class="p w" data-msave="${esc(id)}">Save</button></div>`}
  return h}
-function nsCell(c){const sg=suggest(c);return`<div class="mf" style="margin:0"><input data-nst="${esc(c.id)}" value="${esc(c.nextStep||'')}" placeholder="${esc(sg.txt)}" aria-label="Next step" style="min-width:170px"><input type="date" data-nsd="${esc(c.id)}" value="${esc(c.nextStepDate||'')}" aria-label="Next step date"></div>${c.nextStepDate?'':`<span class="t">Suggested: ${esc(sg.txt)} · ${esc(fmt(sg.d))}${sg.why?' · '+esc(sg.why):''}</span><button class="w" data-nsuse="${esc(c.id)}">Use suggestion</button>`}`}
+function nsCell(c){const sg=suggest(c);return`<div class="mf" style="margin:0"><input data-nst="${esc(c.id)}" value="${esc(c.nextStep||'')}" placeholder="${esc(sg.txt)}" aria-label="Next step" style="min-width:170px"><input type="date" data-nsd="${esc(c.id)}" value="${esc(c.nextStepDate||'')}" min="${today()}" aria-label="Next step date"></div>${c.nextStepDate?'':`<span class="t">Suggested: ${esc(sg.txt)} · ${esc(fmt(sg.d))}${sg.why?' · '+esc(sg.why):''}</span><button class="w" data-nsuse="${esc(c.id)}">Use suggestion</button>`}`}
 const cmCell=c=>{const cm=c.comments||[],l=cm[cm.length-1];return`<button class="w" data-open="${esc(c.id)}">Comments (${cm.length})</button>${l?`<span class="t">${esc(fmt(istDay(l.t)))}: ${esc(l.x.slice(0,70))}${l.x.length>70?'…':''}</span>`:''}`};
 function mTable(arr,lab){return arr.length?`<div class="scroll"><table class="stack"><thead><tr><th>Lead</th><th>${lab}</th><th>Status</th><th>Next step</th><th>Comments</th></tr></thead><tbody>${arr.map(c=>`<tr class="row" data-id="${esc(c.id)}"><td><button class="nm" data-open="${esc(c.id)}">${esc(c.name||c.email)}</button><span class="t">${esc(c.title||'')}${c.title?' · ':''}<a href="#acct-${esc(slug(c.account))}">${esc(c.account||'')}</a></span></td><td class="n">${esc(mDateTxt(c))}${mStat(c)==='Rescheduled'?'<span class="t">rescheduled</span>':''}${c.recur?`<span class="t">${c.recur.left} check-ins left, every ${c.recur.every} days</span>`:''}</td><td>${mStatCell(c)}</td><td>${nsCell(c)}</td><td>${cmCell(c)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">None yet.</div>'}
-function vMeetings(){const cs=contacts().filter(inMtg);const sch=cs.filter(c=>['Scheduled','Rescheduled'].includes(mStat(c))).sort((a,b)=>(a.meetingNext||'9').localeCompare(b.meetingNext||'9'));
- const con=cs.filter(c=>mStat(c)==='Conducted').sort((a,b)=>(mDate(b)||'').localeCompare(mDate(a)||'')),can=cs.filter(c=>mStat(c)==='Cancelled by client').sort((a,b)=>(a.nextStepDate||'').localeCompare(b.nextStepDate||''));
- return`<section class="band" style="padding-bottom:6px"><h1>Meetings</h1><div class="sub">A lead appears here once you mark a meeting scheduled (Outcome on the Today page, or the contact's stage), and once a meeting is conducted it moves to the Deals page. Update the status, set the next step, and add comments: the suggested next touch follows your latest comment.</div></section>
- <section class="band"><div class="panel"><h2>Scheduled · ${sch.length}</h2>${mTable(sch,'Meeting on')}</div></section>
- <section class="band"><div class="note">Conducted meetings now live on the <a href="#deals">Deals page</a> · ${pl(con.length,'deal')}.</div></section>
- <section class="band"><div class="panel"><h2>Cancelled by client: recurring check-ins · ${can.length}</h2>${mTable(can,'Next check-in')}</div></section>`}
+function mtgSec(){const cs=contacts().filter(inMtg),t=today(),wk=addD(t,7),since=addD(t,-30);
+ const up=cs.filter(c=>['Scheduled','Rescheduled'].includes(mStat(c))).sort((a,b)=>(a.meetingNext||'9').localeCompare(b.meetingNext||'9'));
+ const tq=cs.filter(needsQual).sort((a,b)=>(b.meetingDate||'').localeCompare(a.meetingDate||''));
+ const con=cs.filter(c=>mStat(c)==='Conducted'&&!needsQual(c)),can=cs.filter(c=>mStat(c)==='Cancelled by client').sort((a,b)=>(a.nextStepDate||'').localeCompare(b.nextStepDate||''));
+ const rq=contacts().filter(c=>c.qual&&c.qual.at&&istDay(c.qual.at)>=since).sort((a,b)=>(b.qual.at||'').localeCompare(a.qual.at||'')).slice(0,25);
+ const late=up.filter(c=>c.meetingNext&&c.meetingNext<t).length,soon=up.filter(c=>c.meetingNext&&c.meetingNext>=t&&c.meetingNext<=wk).length;
+ const open=S.qOpen?getC(S.qOpen):null,listed=open&&[...up,...tq,...rq].some(c=>c.id===open.id);
+ const form=c=>`<div class="qinline"><h2>Qualify ${esc(c.name||c.email)}</h2><span class="t">${esc(c.title||'')}${c.title?' · ':''}${esc(c.account||'')}${mStat(c)?' · meeting '+esc(mStat(c).toLowerCase())+' '+esc(mDateTxt(c)):''}. Saving marks the meeting held.</span>${isDNC(c)?'<div class="note">This lead is Do not contact. Lift DNC in the contact panel before qualifying. <button data-qclose="1">Close</button></div>':qFormH(c)}</div>`;
+ const qrow=(c,n)=>S.qOpen===c.id?`<tr class="qrow"><td colspan="${n}">${form(c)}</td></tr>`:'';
+ const lead=c=>`<td><button class="nm" data-open="${esc(c.id)}">${esc(c.name||c.email)}</button><span class="t">${esc(c.title||'')}${c.title?' · ':''}<a href="#acct-${esc(slug(c.account))}">${esc(c.account||'')}</a></span></td>`;
+ const rowCls=c=>'row'+(S.qOpen===c.id?' qon':'');
+ const upT=up.length?`<div class="scroll"><table class="stack"><thead><tr><th>Lead</th><th>Meeting on</th><th>Status</th><th>Next step</th><th>Held?</th></tr></thead><tbody>${up.map(c=>{const md=c.meetingNext||'',past=!!md&&md<t;return`<tr class="${rowCls(c)}" data-id="${esc(c.id)}">${lead(c)}<td class="n ${past?'over':''}">${esc(md?fmt(md):'Not set')}${past?'<span class="t">date passed: held or reschedule?</span>':md===t?'<span class="t">today</span>':md&&md<=wk?'<span class="t">this week</span>':''}${mStat(c)==='Rescheduled'?'<span class="t">rescheduled</span>':''}</td><td>${mStatCell(c)}</td><td>${nsCell(c)}</td><td><button class="${past||md===t?'p':''}" data-qgo="${esc(c.id)}">${S.qOpen===c.id?'Qualifying below':'Held: qualify'}</button>${cmCell(c)}</td></tr>${qrow(c,5)}`}).join('')}</tbody></table></div>`:'<div class="empty">No upcoming meetings. Book one from an Outcome on the Today page or from the contact panel.</div>';
+ const tqT=tq.length?`<div class="scroll"><table class="stack"><thead><tr><th>Lead</th><th>Held on</th><th>Latest comment</th><th></th></tr></thead><tbody>${tq.map(c=>{const dd=c.meetingDate?daysAgo(c.meetingDate):null;return`<tr class="${rowCls(c)}" data-id="${esc(c.id)}">${lead(c)}<td class="n">${esc(mDateTxt(c))}${dd==null?'':`<span class="t">${dd===0?'today':pl(dd,'day')+' ago'}</span>`}</td><td>${cmCell(c)}</td><td><button class="p" data-qgo="${esc(c.id)}">${S.qOpen===c.id?'Qualifying below':'Qualify'}</button></td></tr>${qrow(c,4)}`}).join('')}</tbody></table></div>`:'<div class="empty">Nothing waiting. Every held meeting is qualified.</div>';
+ const rqT=rq.length?`<div class="scroll"><table class="stack"><thead><tr><th>Lead</th><th>Qualified</th><th>Outcome</th><th></th></tr></thead><tbody>${rq.map(c=>{const q=c.qual;return`<tr class="${rowCls(c)}" data-id="${esc(c.id)}">${lead(c)}<td class="n">${esc(fmt(istDay(q.at)))}${q.out==='noticp'?'':`<span class="t">fit ${q.fit||0}/10</span>`}</td><td>${esc(QOL(q)||q.out)}${q.out==='later'&&q.until?`<span class="t">back on your suggestions ${esc(fmtY(q.until))}</span>`:''}${q.out==='deal'&&isDeal(c)?`<span class="t">now ${esc(dStage(c))}${Number.isInteger(c.dealValue)?' · '+usd(c.dealValue):''}</span>`:''}${q.out==='lost'?`<span class="t">${esc((warmOf(c)||{}).d?'back on your suggestions '+fmtY(warmOf(c).d):'')}</span>`:''}</td><td>${isDNC(c)?'<span class="t">Do not contact</span>':`<button data-qgo="${esc(c.id)}">${S.qOpen===c.id?'Qualifying below':'Re-qualify'}</button>`}</td></tr>${qrow(c,4)}`}).join('')}</tbody></table></div>`:'<div class="empty">Nothing qualified in the last 30 days.</div>';
+ return{up,soon,late,tq,
+ top:`${open&&!listed?`<section class="band">${form(open)}</section>`:''}
+ <section class="band"><div class="panel"><h2>Upcoming meetings · ${up.length}</h2><div class="sub">${soon} in the next 7 days${late?` · <b class="over">${late} past their date: held or reschedule?</b>`:''}. When a meeting is held, press Held: qualify and answer right here, or set its status to Conducted.</div>${upT}</div></section>
+ <section class="band"><div class="panel"><h2>Held, to qualify · ${tq.length}</h2>${tqT}</div></section>`,
+ bottom:`<section class="band"><div class="panel"><h2>Qualified in the last 30 days · ${rq.length}</h2>${rqT}</div></section>
+ <section class="band"><div class="panel"><h2>Cancelled by client: recurring check-ins · ${can.length}</h2>${mTable(can,'Next check-in')}</div></section>`}}
 function vNext(){const t=today(),tm=addBD(t,1);const L=contacts().filter(c=>inMtg(c)&&!warmOf(c)&&!dealLost(c)).map(c=>({...c,n:nsOf(c)})).filter(c=>(c.n.d&&c.n.d<=t)||(['Scheduled','Rescheduled'].includes(mStat(c))&&c.meetingNext&&c.meetingNext<=tm))
   .sort((a,b)=>((b.n.kind==='you')-(a.n.kind==='you'))||(mDate(b)||'').localeCompare(mDate(a)||''));
  const AN=[...S.acc.entries()].filter(([,v])=>v.nextStepDate&&v.nextStepDate<=t);const show=L.slice(0,20);
  return`<section class="band"><div class="panel"><h2>Meeting next steps · ${L.length} due</h2><div class="sub">From your scheduled and conducted meetings: next steps you set come first, then suggestions from your latest comments. Change the status or add a comment to move each one on.</div>
  ${AN.length?`<div class="note"><b>Account next steps due:</b> ${AN.map(([k,v])=>`<a href="#acct-${esc(k)}">${esc(v.name||k)}</a>: ${esc(v.nextStep||'next step')} (${esc(fmt(v.nextStepDate))})`).join(' · ')}</div>`:''}
- ${show.length?`<div class="scroll"><table class="stack"><thead><tr><th>Lead</th><th>Meeting</th><th>Next step</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>${show.map(c=>`<tr class="row" data-id="${esc(c.id)}"><td><button class="nm" data-open="${esc(c.id)}">${esc(c.name||c.email)}</button><span class="t">${esc(c.title||'')}${c.title?' · ':''}${esc(c.account||'')}</span></td><td class="n">${esc(mStat(c))}<span class="t">${esc(mDateTxt(c))}</span></td><td>${esc(c.n.txt)}<span class="t">${esc(c.n.why||'')}</span></td><td class="n ${c.n.d<t?'over':''}">${esc(fmt(c.n.d))}</td><td>${mStatCell(c)}</td><td>${mStat(c)==='Cancelled by client'?`<button class="w" data-cki="${esc(c.id)}">No opportunity yet</button>`:''}<button class="w" data-open="${esc(c.id)}">Comment</button></td></tr>`).join('')}</tbody></table></div>${L.length>20?`<p><a href="#meetings">See all ${L.length} in Meetings</a></p>`:''}`:'<div class="empty">No meeting next steps due today.</div>'}</div></section>`}
+ ${show.length?`<div class="scroll"><table class="stack"><thead><tr><th>Lead</th><th>Meeting</th><th>Next step</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>${show.map(c=>`<tr class="row" data-id="${esc(c.id)}"><td><button class="nm" data-open="${esc(c.id)}">${esc(c.name||c.email)}</button><span class="t">${esc(c.title||'')}${c.title?' · ':''}${esc(c.account||'')}</span></td><td class="n">${esc(mStat(c))}<span class="t">${esc(mDateTxt(c))}</span></td><td>${esc(c.n.txt)}<span class="t">${esc(c.n.why||'')}</span></td><td class="n ${c.n.d<t?'over':''}">${esc(fmt(c.n.d))}</td><td>${mStatCell(c)}</td><td>${c.n.kind==='qualify'?`<button class="p" data-qgo="${esc(c.id)}">Qualify</button> `:''}${mStat(c)==='Cancelled by client'?`<button class="w" data-cki="${esc(c.id)}">No opportunity yet</button>`:''}<button class="w" data-open="${esc(c.id)}">Comment</button></td></tr>`).join('')}</tbody></table></div>${L.length>20?`<p><a href="#deals">See all ${L.length} on the Deals page</a></p>`:''}`:'<div class="empty">No meeting next steps due today.</div>'}</div></section>`}
 async function saveStatus(id,cell){const p=S.mpend[id],c=getC(id);if(!p||!c)return;const t=today(),now=new Date().toISOString(),cm=[...(c.comments||[])];let patch;
  if(p.st==='Cancelled by client'){const mode=(cell.querySelector('input[type=radio]:checked')||{}).value,why=((cell.querySelector('[data-cxwhy]')||{}).value||'').trim(),said=why?[{t:new Date(Date.now()+1).toISOString(),x:'Client said: '+why}]:[];
   if(mode==='recur'){const ev=Math.max(7,+cell.querySelector('[data-every]').value||30),k=Math.max(1,+cell.querySelector('[data-times]').value||3),nd=nextBD(iso(new Date(D(t).getTime()+ev*864e5)));cm.push({t:now,x:`Meeting cancelled by the client. Recurring check-ins every ${ev} days, ${k} times.`},...said);
@@ -666,8 +755,10 @@ async function saveStatus(id,cell){const p=S.mpend[id],c=getC(id);if(!p||!c)retu
   else{cm.push({t:now,x:'Meeting cancelled by the client. Moved back to the outreach list.'},...said);patch={cancelledAt:t,lostAt:t,warmDoneAt:'',mtgStatus:'',stage:'Follow-up',stageLocked:false,recur:null,nextStep:'',nextStepDate:'',meetingNext:'',snoozeUntil:'',comments:cm}}}
  else{const d=cell.querySelector('[data-mdate]').value;if(!d){flash('Pick a date.');return}
   if(p.st==='Conducted'){if(d>t){flash('A conducted meeting needs a date on or before today.');return}cm.push({t:now,x:'Meeting conducted on '+fmt(d)+'.'});
-   await upd(id,{mtgStatus:'Conducted',stage:c.stage==='Proposal'?'Proposal':'Meeting conducted',stageLocked:true,meetingDate:d,meetingNext:'',nextStep:'',nextStepDate:'',comments:cm});
-   if(![...S.meet.values()].some(m=>m.c===id&&m.date===d))await setMeeting(id,c,d);delete S.mpend[id];S.sel=id;flash('Marked conducted. Add a comment on how it went to get the next-step suggestion.');render();return}
+   await upd(id,{mtgStatus:'Conducted',stage:c.stage==='Proposal'?'Proposal':'Meeting conducted',stageLocked:true,meetingDate:d,meetingNext:'',nextStep:'',nextStepDate:'',dealRemoved:false,...(DSTAGE.includes(c.dealStage)?{}:{qualPending:true}),comments:cm});
+   if(![...S.meet.values()].some(m=>m.c===id&&m.date===d))await setMeeting(id,c,d);delete S.mpend[id];
+   if(!DSTAGE.includes(c.dealStage)){qGo(id,{date:d});flash('Marked conducted. Qualify it: ICP fit and whether the deal is worth pushing.');return}
+   S.sel=id;flash('Marked conducted. Add a comment on how it went to get the next-step suggestion.');render();return}
   if(d<t){flash('Pick today or a future date.');return}cm.push({t:now,x:(p.st==='Rescheduled'?'Meeting rescheduled to ':'Meeting scheduled for ')+fmt(d)+'.'});
   patch={mtgStatus:p.st,stage:'Meeting scheduled',stageLocked:true,meetingNext:d,snoozeUntil:'',comments:cm}}
  await upd(id,patch);delete S.mpend[id];flash('Meeting status saved.')}
@@ -681,8 +772,13 @@ async function checkinDone(id){const c=getC(id),t=today(),now=new Date().toISOSt
 const DSTAGE=['Discovery','Next meeting','Proposal','Negotiation','On hold','Won','Lost'];
 const DOPEN=['Discovery','Next meeting','Proposal','Negotiation','On hold'];
 const DSTG={Discovery:'Meeting conducted','Next meeting':'Meeting conducted','On hold':'Meeting conducted',Lost:'Meeting conducted',Proposal:'Proposal',Negotiation:'Proposal',Won:'Proposal'};
-const dStage=c=>DSTAGE.includes(c.dealStage)?c.dealStage:(c.stage==='Proposal'?'Proposal':'Discovery');
-const isDeal=c=>inMtg(c)&&mStat(c)==='Conducted';
+const DCOLS=['To qualify',...DSTAGE];
+const isDeal=c=>inMtg(c)&&mStat(c)==='Conducted'&&!c.dealRemoved;
+// meetings marked conducted before QSINCE keep their old default stage; newer ones must be qualified
+const QSINCE='';
+const needsQual=c=>isDeal(c)&&!DSTAGE.includes(c.dealStage)&&(!!c.qualPending||(c.meetingDate||'')>=QSINCE);
+const dStage=c=>DSTAGE.includes(c.dealStage)?c.dealStage:needsQual(c)?'To qualify':(c.stage==='Proposal'?'Proposal':'Discovery');
+const lostCoolN=()=>Math.min(730,Math.max(1,+R().lostCool||40));
 const dealLost=c=>isDeal(c)&&dStage(c)==='Lost';
 const lostMeet=c=>dealLost(c)||mStat(c)==='Cancelled by client'||(!!c.cancelledAt&&!c.mtgStatus&&!['Meeting scheduled','Meeting conducted','Proposal'].includes(c.stage));
 const dv=c=>Number.isInteger(c.dealValue)?c.dealValue:0;
@@ -708,59 +804,166 @@ function warmWhen(x,base){const t=String(x||'').toLowerCase(),y=+base.slice(0,4)
  const n=t.match(/\bin\s+(\d+|a couple of|couple of|a few|few|a|one|two|three|four|five|six)\s+(weeks?|months?|quarters?)\b/);
  if(n){const k=/^\d+$/.test(n[1])?+n[1]:NUMW[n[1]];if(n[2].startsWith('week'))return nextBD(iso(new Date(D(base).getTime()+k*7*864e5)));return addMonths(base,n[2].startsWith('quarter')?k*3:k)}
  return''}
-function warmOf(c){const r=R();if(!r.warmRule||!lostMeet(c)||isDNC(c)||c.stage==='Left company')return null;
- const cm=c.comments||[];let since=c.lostAt||'';
+function warmOf(c){const r=R();if(isDNC(c)||c.stage==='Left company')return null;
+ const q=c.qual;if(q&&q.out==='later'&&q.until&&!inMtg(c)){if(c.warmDoneAt&&c.warmDoneAt>=q.at)return null;return{d:q.until,why:q.note||'No timeline given: the '+(+r.laterDays||100)+'-day default',said:!!q.note,base:istDay(q.at),kind:'Not right now'}}
+ if(!r.warmRule||!lostMeet(c))return null;
+ const cm=(c.comments||[]).filter(x=>!/^Qualification: /.test(x.x||'')),lost=dealLost(c);let since=c.lostAt||(lost&&c.dealStageAt)||'';
  if(!since)for(let i=cm.length-1;i>=0;i--)if(/^(Meeting cancelled by the client|Deal lost)/.test(cm[i].x||'')){since=istDay(cm[i].t);break}
  const cand=since?cm.filter(x=>istDay(x.t)>=since):cm.slice(-1);
  let hit=null;for(let i=cand.length-1;i>=0;i--)if(LATERX.test(cand[i].x||'')){hit=cand[i];break}
- if(!hit||(c.warmDoneAt&&(hit.t||'')<=c.warmDoneAt))return null;
+ if(hit&&c.warmDoneAt&&(hit.t||'')<=c.warmDoneAt)hit=null;
+ const kind=lost?'Deal lost':'Meeting cancelled by the client';
+ if(!hit&&(!lost||c.warmDoneAt))return null;
+ const n=lostCoolN(),cool=lost?nextBD(addD(since||today(),n)):'';
+ if(!hit)return{d:cool,why:'No reach-out-later comment: the '+n+'-day cool-down',said:false,base:since||today(),kind};
  const base=istDay(hit.t)||since||today(),gap=Math.min(365,Math.max(7,+r.warmGap||30));
- const d=warmWhen(hit.x,base)||nextBD(iso(new Date(D(base).getTime()+gap*864e5)));
- return{d,why:String(hit.x||'').replace(/^(Deal lost: |Client said: )/,''),base,kind:dealLost(c)?'Deal lost':'Meeting cancelled by the client'}}
-function dealHold(c){if(!lostMeet(c))return'';const w=warmOf(c);if(w)return'Warm connect due '+fmt(w.d)+' (on the Today page)';
- const r=R();if(dealLost(c)&&c.lostAt&&!c.warmDoneAt&&daysAgo(c.lostAt)<r.niCool)return'Deal lost: cool-off until '+fmt(iso(new Date(D(c.lostAt).getTime()+r.niCool*864e5)));return''}
+ let d=warmWhen(hit.x,base)||nextBD(addD(base,gap));if(cool&&d<cool)d=cool;
+ return{d,why:String(hit.x||'').replace(/^(Deal lost: |Client said: )/,''),said:true,base,kind}}
+function dealHold(c){const w=warmOf(c);if(w)return w.d<=today()?'Warm connect due '+fmt(w.d)+' (on the Today page)':({'Deal lost':'Deal lost: cool-down','Not right now':'Parked: not right now'}[w.kind]||'Warm connect')+', back on your suggestions '+fmt(w.d);
+ if(!lostMeet(c))return'';const n=lostCoolN();if(dealLost(c)&&c.lostAt&&!c.warmDoneAt&&daysAgo(c.lostAt)<n)return'Deal lost: cool-down until '+fmt(addD(c.lostAt,n));return''}
 function dStageCell(c){const id=c.id,p=S.dpend[id],v=p?p.st:dStage(c);
+ if(needsQual(c))return`<button class="p" data-qgo="${esc(id)}">Qualify</button><span class="t">Not qualified yet</span>`;
  let h=`<select data-dst="${esc(id)}" aria-label="Deal stage">${DSTAGE.map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('')}</select>`;
  if(p&&p.st==='Lost')h+=`<div class="mf"><input data-lostwhy placeholder="What did they say? e.g. reach out after Q1" aria-label="What the client said" style="min-width:210px"><button class="p w" data-dlost="${esc(id)}">Mark lost</button></div>`;
- else if(dStage(c)==='Lost'){const w=warmOf(c);h+=`<span class="t">${w?'Warm connect '+(w.d<=today()?'due now':'on '+esc(fmt(w.d))):c.warmDoneAt?'Warm connect done':'No reach-out-later comment: held for the cool-off'}</span>`}
+ else if(dStage(c)==='Lost'){const w=warmOf(c);h+=`<span class="t">${w?(w.d<=today()?'Back on your suggestions now':'Cool-down: back on your suggestions '+esc(fmtY(w.d))):c.warmDoneAt?'Warm connect done':'Held for the cool-down'}</span>`}
  return h}
 const dValCell=c=>`<span class="usd"><span>$</span><input data-dval="${esc(c.id)}" inputmode="numeric" autocomplete="off" value="${Number.isInteger(c.dealValue)?c.dealValue.toLocaleString('en-US'):''}" placeholder="Whole dollars" aria-label="Deal value in whole US dollars"></span>`;
-function dealBoard(cs){const cols=DSTAGE.filter(x=>x!=='Lost'||S.dLost);
- return`<div class="kb">${cols.map(x=>{const a=cs.filter(c=>dStage(c)===x).sort((p,q)=>dv(q)-dv(p)||(p.name||'').localeCompare(q.name||'')),tot=a.reduce((n,c)=>n+dv(c),0);
-  return`<section class="kcol" data-drop="${esc(x)}" aria-label="${esc(x)}"><header><b>${esc(x)}</b><span>${a.length}</span><em>${tot?usd(tot):''}</em></header>${a.map(c=>{const ds=c.dealStageAt||c.meetingDate||'',dd=ds?daysAgo(ds):null;
-   return`<article class="kcard" draggable="true" data-drag="${esc(c.id)}" data-open="${esc(c.id)}"><button class="nm" data-open="${esc(c.id)}">${esc(c.name||c.email)}</button><span class="t">${esc(c.title||'')}${c.title?' · ':''}${esc(c.account||'')}</span><span class="kv ${Number.isInteger(c.dealValue)?'':'no'}">${Number.isInteger(c.dealValue)?usd(c.dealValue):'Add a value'}${dd==null?'':`<span class="chip">${dd===0?'today':dd+'d in stage'}</span>`}</span></article>`}).join('')||'<div class="kempty">Drop a deal here</div>'}</section>`}).join('')}</div>`}
-function vDeals(){const cs=contacts().filter(isDeal),by=st=>cs.filter(c=>dStage(c)===st),sum=a=>a.reduce((x,c)=>x+dv(c),0),mode=S.dView||'board';
- const open=cs.filter(c=>DOPEN.includes(dStage(c))),won=by('Won'),lost=by('Lost'),noV=open.filter(c=>!Number.isInteger(c.dealValue)).length,mx2=Math.max(1,...DSTAGE.map(x=>by(x).length));
- const srt=a=>a.slice().sort((x,y)=>(DSTAGE.indexOf(dStage(x))-DSTAGE.indexOf(dStage(y)))||(mDate(y)||'').localeCompare(mDate(x)||''));
+function dealBoard(cs){const cols=DCOLS.filter(x=>x!=='To qualify'&&(x!=='Lost'||S.dLost));
+ return`<div class="kb">${cols.map(x=>{const q=x==='To qualify',a=cs.filter(c=>dStage(c)===x).sort(q?(p,r)=>(r.meetingDate||'').localeCompare(p.meetingDate||''):(p,r)=>dv(r)-dv(p)||(p.name||'').localeCompare(r.name||'')),tot=a.reduce((n,c)=>n+dv(c),0);
+  return`<section class="kcol ${q?'kq':''}" data-drop="${esc(x)}" aria-label="${esc(x)}"><header><b>${esc(x)}</b><span>${a.length}</span><em>${tot&&!q?usd(tot):''}</em></header>${a.map(c=>{const ds=q?(c.meetingDate||''):(c.dealStageAt||c.meetingDate||''),dd=ds?daysAgo(ds):null;
+   return`<article class="kcard" draggable="true" data-drag="${esc(c.id)}" data-open="${esc(c.id)}"><button class="nm" data-open="${esc(c.id)}">${esc(c.name||c.email)}</button><span class="t">${esc(c.title||'')}${c.title?' · ':''}${esc(c.account||'')}</span>${q?`<span class="kv no"><button class="p" data-qgo="${esc(c.id)}" style="min-height:30px;padding:3px 14px;font-size:13px">Qualify</button>${dd==null?'':`<span class="chip">${dd===0?'met today':'met '+dd+'d ago'}</span>`}</span>`:`<span class="kv ${Number.isInteger(c.dealValue)?'':'no'}">${Number.isInteger(c.dealValue)?usd(c.dealValue):'Add a value'}${dd==null?'':`<span class="chip">${dd===0?'today':dd+'d in stage'}</span>`}</span>`}</article>`}).join('')||`<div class="kempty">${q?'No meetings waiting. Use Log a meeting.':'Drop a deal here'}</div>`}</section>`}).join('')}</div>`}
+function vDeals(){const M=mtgSec(),cs=contacts().filter(isDeal),by=st=>cs.filter(c=>dStage(c)===st),sum=a=>a.reduce((x,c)=>x+dv(c),0),mode=S.dView||'board',t=today();
+ const tq=by('To qualify'),open=cs.filter(c=>DOPEN.includes(dStage(c))),won=by('Won'),lost=by('Lost'),noV=open.filter(c=>!Number.isInteger(c.dealValue)).length,mx2=Math.max(1,...DCOLS.map(x=>by(x).length));
+ const park=contacts().map(c=>({c,w:warmOf(c)})).filter(x=>x.w).sort((a,b)=>a.w.d.localeCompare(b.w.d));
+ const srt=a=>a.slice().sort((x,y)=>(DCOLS.indexOf(dStage(x))-DCOLS.indexOf(dStage(y)))||(mDate(y)||'').localeCompare(mDate(x)||''));
  const tbl=a=>a.length?`<div class="scroll"><table class="stack"><thead><tr><th>Lead</th><th>Met on</th><th>Deal stage</th><th>Deal value (USD)</th><th>Next step</th><th>Comments</th></tr></thead><tbody>${srt(a).map(c=>{const n=nsOf(c);return`<tr class="row" data-id="${esc(c.id)}"><td><button class="nm" data-open="${esc(c.id)}">${esc(c.name||c.email)}</button><span class="t">${esc(c.title||'')}${c.title?' · ':''}<a href="#acct-${esc(slug(c.account))}">${esc(c.account||'')}</a></span></td><td class="n">${esc(mDateTxt(c))}</td><td>${dStageCell(c)}</td><td>${dValCell(c)}</td><td>${dStage(c)==='Lost'?`<span class="t">${esc(n.txt)}${n.d?' · '+esc(fmt(n.d)):''}</span>`:nsCell(c)}</td><td>${cmCell(c)}</td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">None yet.</div>';
- return`<section class="band" style="padding-bottom:6px"><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:end;justify-content:space-between"><div style="flex:1 1 320px"><h1>Deals</h1><div class="sub">Every conducted meeting is a deal. ${mode==='board'?'Drag a card to another stage, or click it to set the value, next step and comments.':'Move each deal through the stages, enter the value in whole US dollars and keep the next step current.'} A lost deal whose comment says to reach out later comes back on the Today page as a warm connect.</div></div>
- <div class="bar-tools" style="margin:0"><div class="seg" role="group" aria-label="Deals view"><button class="${mode==='board'?'on':''}" data-dview="board" aria-pressed="${mode==='board'}">Board</button><button class="${mode==='table'?'on':''}" data-dview="table" aria-pressed="${mode==='table'}">Table</button></div>${mode==='board'?`<button data-dlosttog="1">${S.dLost?'Hide lost deals':'Show lost deals'}</button>`:''}</div></div></section>
+ return`<section class="band" style="padding-bottom:6px"><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:end;justify-content:space-between"><div style="flex:1 1 320px"><h1>Meetings and deals</h1><div class="sub">Your upcoming meetings, the ones to qualify, and the pipeline, on one page. When a meeting is held, qualify it right where it is listed: is this person your ICP, and is the deal worth pushing? Then it moves to a stage, gets parked for later, goes to Do not contact or is marked lost. ${mode==='board'?'Drag a card to another stage, or click it to set the value, next step and comments.':'Move each deal through the stages, enter the value in whole US dollars and keep the next step current.'} Lost deals sit out a ${lostCoolN()}-day cool-down, then come back on the Today suggestions.</div></div>
+ <div class="bar-tools" style="margin:0"><button class="${S.qLog?'':'p'}" data-qlog="1" aria-expanded="${!!S.qLog}">${S.qLog?'Close':'Log a meeting'}</button><div class="seg" role="group" aria-label="Deals view"><button class="${mode==='board'?'on':''}" data-dview="board" aria-pressed="${mode==='board'}">Board</button><button class="${mode==='table'?'on':''}" data-dview="table" aria-pressed="${mode==='table'}">Table</button></div>${mode==='board'?`<button data-dlosttog="1">${S.dLost?'Hide lost deals':'Show lost deals'}</button>`:''}</div></div></section>
+ ${S.qLog?`<section class="band" style="padding-bottom:0"><div class="panel"><h2>Log a meeting and qualify it</h2><div class="sub">Pick the person you met. The meeting is marked conducted when you save the qualification.</div><input type="search" id="qPick" value="${esc(S.qPickQ||'')}" placeholder="Search name, account or email" aria-label="Find the person you met" style="width:100%;margin-top:10px;border-radius:999px;padding-inline:14px"><div id="qPickRes" class="qpick">${qPickH(S.qPickQ)}</div></div></section>`:''}
  <section class="band green" style="padding-block:18px"><div class="kpis">
- <div class="kpi big"><div class="num">${usd(sum(open))}</div><div>open pipeline · ${pl(open.length,'deal')}${noV?` · ${noV} without a value yet`:''}</div></div>
+ <div class="kpi big w2"><div class="num">${usd(sum(open))}</div><div>open pipeline · ${pl(open.length,'deal')}${noV?` · ${noV} without a value yet`:''}</div></div>
+ <div class="kpi"><div class="num">${M.up.length}</div><div>upcoming meetings · ${M.soon} this week${M.late?` · ${M.late} past date`:''}</div></div>
+ <div class="kpi" ${tq.length?'data-qfirst="1" style="cursor:pointer"':''}><div class="num">${tq.length}</div><div>${tq.length===1?'meeting':'meetings'} to qualify</div></div>
  <div class="kpi"><div class="num">${usd(sum(won))}</div><div>won · ${won.length} ${won.length===1?'deal':'deals'}</div></div>
- <div class="kpi"><div class="num">${lost.length}</div><div>lost${sum(lost)?' · '+usd(sum(lost)):''}</div></div>
- <div class="kpi"><div class="num">${won.length+lost.length?Math.round(won.length/(won.length+lost.length)*100)+'%':'–'}</div><div>win rate of closed deals</div></div></div></section>
- ${mode==='board'?`<section class="band">${dealBoard(cs)}</section>`:`<section class="band"><div class="panel"><h2>Where the meetings are moving</h2>${DSTAGE.map(x=>`<div class="hb wide"><span>${esc(x)}</span><div class="bar"><b style="width:${by(x).length/mx2*100}%" class="${x==='Won'?'':'m'}"></b></div><span class="v">${by(x).length}${sum(by(x))?' · '+usd(sum(by(x))):''}</span></div>`).join('')}</div></section>
+ <div class="kpi"><div class="num">${lost.length}</div><div>lost${sum(lost)?' · '+usd(sum(lost)):''}${won.length+lost.length?' · win rate '+Math.round(won.length/(won.length+lost.length)*100)+'%':''}</div></div></div></section>
+ ${M.top}
+ <section class="band" style="padding-bottom:0"><h2>Pipeline</h2></section>
+ ${mode==='board'?`<section class="band">${dealBoard(cs)}</section>`:`<section class="band"><div class="panel"><h2>Where the meetings are moving</h2>${DCOLS.map(x=>`<div class="hb wide"><span>${esc(x)}</span><div class="bar"><b style="width:${by(x).length/mx2*100}%" class="${x==='Won'?'':'m'}"></b></div><span class="v">${by(x).length}${sum(by(x))?' · '+usd(sum(by(x))):''}</span></div>`).join('')}</div></section>
  <section class="band"><div class="panel"><h2>Open deals · ${open.length}</h2>${tbl(open)}</div></section>
  <section class="band"><div class="panel"><h2>Won · ${won.length}</h2>${tbl(won)}</div></section>
- <section class="band"><div class="panel"><h2>Lost · ${lost.length}</h2>${tbl(lost)}</div></section>`}`}
-function vWarm(){const t=today(),r=R();if(!r.warmRule)return'';const mon=mode(t)==='mon';
+ <section class="band"><div class="panel"><h2>Lost · ${lost.length}</h2>${tbl(lost)}</div></section>`}
+ ${M.bottom}
+ <section class="band"><div class="panel"><h2>Coming back to your suggestions · ${park.length}</h2><div class="sub">Parked as not right now, lost and in the cool-down, or cancelled with a reach-out-later comment. Each returns on the Today page on the date shown, and stays off every other list until then.</div>
+ ${park.length?`<div class="scroll"><table class="stack"><thead><tr><th>Lead</th><th>Why</th><th>What they said</th><th>Back on</th></tr></thead><tbody>${park.map(({c,w})=>`<tr class="row" data-id="${esc(c.id)}"><td><button class="nm" data-open="${esc(c.id)}">${esc(c.name||c.email)}</button><span class="t">${esc(c.title||'')}${c.title?' · ':''}${esc(c.account||'')}</span></td><td>${esc(w.kind)}<span class="t">${esc(fmt(w.base))}</span></td><td><span class="t" style="color:var(--ink)">${w.said?'“'+esc(w.why.slice(0,120))+(w.why.length>120?'…':'')+'”':esc(w.why)}</span></td><td class="n">${esc(fmtY(w.d))}${w.d<=t?'<span class="t">due now</span>':''}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nothing parked or cooling down.</div>'}</div></section>`}
+function vWarm(){const t=today(),r=R();const mon=mode(t)==='mon';
  const all=contacts().map(c=>({c,w:warmOf(c)})).filter(x=>x.w),L=all.filter(x=>x.w.d<=t).sort((a,b)=>a.w.d.localeCompare(b.w.d)),up=all.length-L.length;
- return`<section class="band"><div class="panel"><h2>Warm connects · ${L.length} due</h2><div class="sub">Leads whose meeting was cancelled or whose deal was lost, where your comment said to reach out later. Reconnect on the relationship you already have, not with a cold pitch.${up?` ${up} more come back on later dates.`:''}${mon?' Monday rule: email or LinkedIn only.':''}</div>
+ return`<section class="band"><div class="panel"><h2>Suggestions: warm reconnects · ${L.length} due</h2><div class="sub">People you already met who are due again: deals you parked as not right now (on the date in your comment, or after ${+r.laterDays||100} days), lost deals after the ${lostCoolN()}-day cool-down, and cancelled meetings where they asked you to reach out later. Reconnect on the relationship you already have, not with a cold pitch.${up?` ${up} more come back on later dates.`:''}${mon?' Monday rule: email or LinkedIn only.':''}</div>
  ${L.length?`<div class="scroll"><table class="stack"><thead><tr><th>Lead</th><th>What happened</th><th>What they said</th><th>Due</th><th>Reach them</th><th>Done</th></tr></thead><tbody>${L.map(({c,w})=>{const chs=['Email','LinkedIn'].concat(mon?[]:['Call']).filter(ch=>ch==='Email'?!!c.email&&!(c.bounced||c.stage==='Bounced'):ch==='Call'?!!c.phone:true);
- return`<tr class="row" data-id="${esc(c.id)}"><td><button class="nm" data-open="${esc(c.id)}">${esc(c.name||c.email)}</button><span class="t">${esc(c.title||'')}${c.title?' · ':''}${esc(c.account||'')}</span></td><td>${esc(w.kind)}<span class="t">${esc(fmt(c.lostAt||w.base))}${dealLost(c)&&Number.isInteger(c.dealValue)?' · '+usd(c.dealValue):''}</span></td><td><span class="t" style="color:var(--ink)">“${esc(w.why.slice(0,120))}${w.why.length>120?'…':''}”</span></td><td class="n ${w.d<t?'over':''}">${esc(fmt(w.d))}</td><td><span class="t" style="color:var(--ink)">${!mon&&c.phone?esc(c.phone)+' · ':''}${esc(c.email||'')}</span>${!mon&&c.phone?`<span class="t">${esc(winText(c))}</span>`:''}</td><td>${chs.map(ch=>`<button class="w" data-warm="${esc(c.id)}" data-ch="${ch}">Done: ${ch==='Email'?'email':ch==='Call'?'call':'LinkedIn'}</button>`).join(' ')}</td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">No warm connects due today.</div>'}</div></section>`}
-async function setDealStage(id,v,open){const c2=getC(id);if(!c2||!DSTAGE.includes(v))return;if(isDNC(c2)){flash('This lead is Do not contact.');render();return}
+ return`<tr class="row" data-id="${esc(c.id)}"><td><button class="nm" data-open="${esc(c.id)}">${esc(c.name||c.email)}</button><span class="t">${esc(c.title||'')}${c.title?' · ':''}${esc(c.account||'')}</span></td><td>${esc(w.kind)}<span class="t">${esc(fmt(w.kind==='Deal lost'&&c.lostAt?c.lostAt:w.base))}${dealLost(c)&&Number.isInteger(c.dealValue)?' · '+usd(c.dealValue):''}</span></td><td><span class="t" style="color:var(--ink)">${w.said?'“'+esc(w.why.slice(0,120))+(w.why.length>120?'…':'')+'”':esc(w.why)}</span></td><td class="n ${w.d<t?'over':''}">${esc(fmt(w.d))}</td><td><span class="t" style="color:var(--ink)">${!mon&&c.phone?esc(c.phone)+' · ':''}${esc(c.email||'')}</span>${!mon&&c.phone?`<span class="t">${esc(winText(c))}</span>`:''}</td><td>${chs.map(ch=>`<button class="w" data-warm="${esc(c.id)}" data-ch="${ch}">Done: ${ch==='Email'?'email':ch==='Call'?'call':'LinkedIn'}</button>`).join(' ')}</td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">No warm connects due today.</div>'}</div></section>`}
+async function setDealStage(id,v,open){const c2=getC(id);if(!c2)return;if(isDNC(c2)){flash('This lead is Do not contact.');render();return}
+ if(v==='To qualify'){if(!needsQual(c2))qGo(id,{});return}
+ if(!DSTAGE.includes(v))return;
+ if(needsQual(c2)){qGo(id,v==='Lost'?{out:'lost',worth:'no'}:DOPEN.includes(v)?{out:'deal',worth:'yes',dstage:v}:{out:'deal',worth:'yes'});flash('Qualify it first: is this person your ICP, and is the deal worth pushing?');return}
  if(v==='Lost'){S.dpend[id]={st:'Lost'};if(open){S.sel=id;drawer();flash('Add what they said, then press Mark lost.')}else render();return}
  delete S.dpend[id];if(v===dStage(c2)){render();return}
  const patch={dealStage:v,dealStageAt:today(),mtgStatus:'Conducted',stage:DSTG[v],stageLocked:true,comments:[...(c2.comments||[]),{t:new Date().toISOString(),x:'Deal stage: '+v+'.'}]};if(dStage(c2)==='Lost'){patch.lostAt='';patch.warmDoneAt=''}
  await upd(id,patch);flash('Deal moved to '+v+'.')}
-async function warmDone(id,ch){const c=getC(id);if(!c)return;if(isDNC(c)){flash('This lead is Do not contact.');return}const t=today(),now=new Date().toISOString(),lab=ch==='Email'?'email':ch==='Call'?'call':'LinkedIn';
+async function warmDone(id,ch){const c=getC(id);if(!c)return;if(isDNC(c)){flash('This lead is Do not contact.');return}const w0=warmOf(c),t=today(),now=new Date().toISOString(),lab=ch==='Email'?'email':ch==='Call'?'call':'LinkedIn';
  const patch={warmDoneAt:now,lastChannel:ch,lastOutcome:'Warm connect',lastOutcomeDate:t,stage:'Follow-up',stageLocked:false,snoozeUntil:'',snoozeWhy:'',nextCallManual:'',recur:null,nextStep:'',nextStepDate:'',comments:[...(c.comments||[]),{t:now,x:'Warm connect done by '+lab+'.'}]};
  if(ch==='Call'){patch.myReachOut=mx(c.myReachOut,t);patch.calls=(c.calls||0)+1;patch.callOutcome='Warm connect'}
  if(ch==='LinkedIn'){patch.liTouches=(c.liTouches||0)+1;patch.lastLinkedIn=mx(c.lastLinkedIn,t)}
  if(ch==='Email')patch.lastEmail=mx(c.lastEmail,t);
  if(mStat(c)==='Cancelled by client')patch.mtgStatus='';
- await upd(id,patch);await addItem(t,{c:id,n:c.name||'',a:c.account||'',ch,k:'Warm connect',s:'Warm connect after '+(dealLost(c)?'a lost deal':'a cancelled meeting'),t:now});flash('Warm connect logged. '+(c.name||'The lead')+' is back on your normal follow-up rules.')}
+ await upd(id,patch);await addItem(t,{c:id,n:c.name||'',a:c.account||'',ch,k:'Warm connect',s:'Warm connect after '+({'Deal lost':'a lost deal','Not right now':'parking it as not right now'}[w0&&w0.kind]||'a cancelled meeting'),t:now});flash('Warm connect logged. '+(c.name||'The lead')+' is back on your normal follow-up rules.')}
+// ---------- qualification
+const QQ=[['icp','Is this person in your ICP?',[['yes','Yes, fits our ICP'],['unsure','Not sure yet'],['no','No, not our ICP']]],
+ ['role','Their role in the buying decision',[['dm','Decision maker'],['inf','Influencer or champion'],['user','End user or researcher'],['unk','Not sure']]],
+ ['need','Need or pain',[['clear','Clear, urgent need'],['some','Interested, no urgency'],['none','No real need']]],
+ ['budget','Budget',[['yes','Budget available'],['plan','Budget being planned'],['none','No budget'],['unk','Do not know']]],
+ ['time','Timeline to buy',[['q','This quarter'],['nq','Next quarter'],['late','6+ months out'],['none','No timeline']]],
+ ['worth','Is the deal worth pushing to the next round?',[['yes','Yes, push it'],['later','Not right now'],['no','No, it is lost']]]];
+const QPTS={icp:{yes:3,unsure:1},role:{dm:2,inf:1},need:{clear:2,some:1},budget:{yes:2,plan:1},time:{q:1,nq:1}};
+const QOUT=[['deal','Push to deal','Pick the stage, set the next call and log what you did.'],['later','Not right now','Park it. It comes back on your Today suggestions on the date in your comment.'],['noticp','Not ICP','Move to Do not contact. Off every list, on every channel.'],['lost','Mark as lost','Held for the cool-down, then back on your Today suggestions.']];
+const QOL=f=>({deal:'Pushed to '+f.dstage,later:'Parked',noticp:'Not ICP: do not contact',lost:'Lost'})[f.out]||'';
+const NOWRX=/\bnot interested\b|\bnot (?:right )?now\b|\bcome back\b|\bcircle back\b/i;
+const qid=()=>{try{return decodeURIComponent(location.hash.slice(9))}catch(e){return''}};
+const qGo=(id,pre)=>{delete S.qf[id];S.qpre[id]=pre||{};S.qOpen=id;S.qScroll=1;if(S.sel)close();if(view()==='deals')render();else location.hash='deals'};
+const qFit=f=>Object.entries(QPTS).reduce((s,[k,m])=>s+(m[f[k]]||0),0);
+const qLab=(k,v)=>{const q=QQ.find(x=>x[0]===k),o=q&&q[2].find(x=>x[0]===v);return o?o[1]:''};
+const qText=f=>['ICP: '+(({yes:'yes',unsure:'not sure',no:'no'})[f.icp]||'not answered'),f.role&&qLab('role',f.role).toLowerCase(),f.need&&'need: '+qLab('need',f.need).toLowerCase(),f.budget&&'budget: '+qLab('budget',f.budget).toLowerCase(),f.time&&'timeline: '+qLab('time',f.time).toLowerCase(),f.worth&&'push: '+({yes:'yes',later:'parked',no:'no'})[f.worth]].filter(Boolean).join(' · ');
+function qAuto(f){if(f.icp==='no')return'noticp';if(!f.icp)return'';if(f.worth==='no')return'lost';if(f.worth==='later')return'later';if(f.worth==='yes')return'deal';return f.out==='noticp'?'':f.out||''}
+const qOuts=f=>!f.icp?[]:f.icp==='no'?['noticp']:['deal','later','lost'];
+function qMoreH(f){if(!f.icp)return'<div class="sub">Answer this first. The rest of the questions open once you do.</div>';
+ if(f.icp==='no')return`<div class="fl"><label for="qNote">Anything to note? (kept as a comment)</label><textarea id="qNote" data-qf="note" rows="3" placeholder="e.g. They only sell to the local market">${esc(f.note)}</textarea><span class="t">No other questions for a lead outside your ICP.</span></div>`;
+ return`${QQ.slice(1).map(([k,l,o])=>`<div class="fl ${k==='worth'?'qkey':''}"><label for="q-${k}">${esc(l)}</label><select id="q-${k}" data-qf="${k}"><option value="">Choose…</option>${o.map(([v,lb])=>`<option value="${v}" ${f[k]===v?'selected':''}>${esc(lb)}</option>`).join('')}</select></div>`).join('')}
+ <div class="fl"><label for="qNote">What did they say?</label><textarea id="qNote" data-qf="note" rows="4" placeholder="e.g. Not interested right now, come back in January">${esc(f.note)}</textarea><span class="t">Write the timing in their words: “come back in January”, “after Q1” or “in 3 months” sets the return date. Saved as a comment on the contact.</span></div>
+ <div id="qSum">${qSum(f)}</div>`}
+function qForm(c){const id=c.id;if(!S.qf[id]){const q=c.qual||{},t=today(),p=S.qpre[id]||{};delete S.qpre[id];
+ const md=mStat(c)==='Conducted'&&c.meetingDate&&c.meetingDate<=t?c.meetingDate:(c.meetingNext&&c.meetingNext<=t?c.meetingNext:t);
+ const f={date:md,icp:q.icp||'',role:q.role||'',need:q.need||'',budget:q.budget||'',time:q.time||'',worth:q.worth||'',note:'',out:'',dstage:DOPEN.includes(c.dealStage)?c.dealStage:'Discovery',dval:Number.isInteger(c.dealValue)?String(c.dealValue):'',ncd:c.nextCallManual&&c.nextCallManual>=t?c.nextCallManual:addBD(t,5),act:'none',callOut:'Spoke',emSub:'',when:'',...p};
+ if(!p.out)f.out=qAuto(f);S.qf[id]=f}return S.qf[id]}
+function qLater(f){const t=today();if(f.when)return{d:f.when,why:'The date you picked'};const w=f.note&&warmWhen(f.note,t);if(w)return{d:w,why:'From your comment: “'+f.note.slice(0,80)+(f.note.length>80?'…':'')+'”'};const n=Math.max(1,+R().laterDays||100);return{d:nextBD(addD(t,n)),why:'No month, quarter or date in your comment, so the '+n+'-day default applies. Write it in the comment (e.g. come back in January) to change it.'}}
+function qLost(f){const t=today(),n=lostCoolN(),cool=nextBD(addD(t,n)),s=f.note&&LATERX.test(f.note)?warmWhen(f.note,t):'';return s&&s>cool?{d:s,why:'From your comment, later than the '+n+'-day cool-down'}:{d:cool,why:n+'-day cool-down'+(s?': your comment names an earlier date, and the cool-down comes first':'')}}
+const olUrl=(c,f)=>'https://outlook.office.com/mail/deeplink/compose?to='+encodeURIComponent(c.email||'')+'&subject='+encodeURIComponent(f.emSub.trim()||'Follow-up after our meeting');
+function qSum(f){const n=qFit(f);return`<div class="hb wide"><span>Fit score</span><div class="bar"><b style="width:${n*10}%"></b></div><span class="v">${n} / 10 · ${n>=7?'strong':n>=4?'workable':'weak'}</span></div>${f.icp==='no'?'<div class="sub">Not ICP: the outcome is Not ICP, which moves them to Do not contact.</div>':''}`}
+function qDet(c,f){const t=today();
+ if(f.out==='deal'){const ok=parseUSD(f.dval).ok;return`<div class="row2"><div class="fl"><label for="qDs">Deal stage</label><select id="qDs" data-qf="dstage">${DOPEN.map(x=>`<option ${x===f.dstage?'selected':''}>${x}</option>`).join('')}</select></div><div class="fl"><label for="qDv">Deal value (USD)</label><span class="usd"><span>$</span><input id="qDv" data-qf="dval" inputmode="numeric" autocomplete="off" value="${esc(f.dval)}" placeholder="Whole dollars" class="${ok?'':'bad'}"></span></div></div>
+ <div class="row2"><div class="fl"><label for="qNc">Next call date</label><input type="date" id="qNc" data-qf="ncd" min="${t}" value="${esc(f.ncd)}"></div><div class="fl"><label for="qAct">Log a reach-out now</label><select id="qAct" data-qf="act"><option value="none" ${f.act==='none'?'selected':''}>Nothing yet</option><option value="call" ${f.act==='call'?'selected':''}>I called them</option><option value="email" ${f.act==='email'?'selected':''} ${c.email?'':'disabled'}>I emailed them${c.email?'':' (no email on file)'}</option></select></div></div>
+ ${f.act==='call'?`<div class="fl"><label for="qCo">Call outcome</label><select id="qCo" data-qf="callOut">${OUT.filter(o=>o!=='Not interested').map(o=>`<option ${o===f.callOut?'selected':''}>${esc(o)}</option>`).join('')}</select><span class="t">Logged as a call today. The next call date above drives the Calls to make list.</span></div>`:''}
+ ${f.act==='email'?`<div class="fl"><label for="qEs">Email subject</label><input id="qEs" data-qf="emSub" value="${esc(f.emSub)}" placeholder="Follow-up after our meeting"><span class="t"><a id="qOlk" href="${esc(olUrl(c,f))}" target="_blank" rel="noopener">Write it in Outlook</a> · Logged as an email touch today. When the daily Outlook sync finds it in your sent mail, it is matched to this entry and counted once.</span></div>`:''}`}
+ if(f.out==='later'){const w=qLater(f);return`<div class="note">Back on your Today suggestions on <b>${esc(fmtY(w.d))}</b><span class="t">${esc(w.why)}</span></div><div class="fl"><label for="qWh">Or pick the date yourself</label><input type="date" id="qWh" data-qf="when" min="${addD(t,1)}" value="${esc(f.when)}"></div>`}
+ if(f.out==='noticp')return`<div class="note qwarn"><b>Saving deletes ${esc(c.name||'this lead')}'s details</b> from the CRM: email, phone, title, location, LinkedIn, time zone, notes, deal value and the qualification answers. Their name, company and comments stay, with a Do not contact block, so they are never contacted again if they reappear in your sheet. This cannot be undone.</div>`;
+ if(f.out==='lost'){const w=qLost(f);return`<div class="note">Marked lost today. Back on your Today suggestions on <b>${esc(fmtY(w.d))}</b><span class="t">${esc(w.why)}. Until then they stay off every list.</span></div>`}
+ return f.icp?'<div class="empty">Answer the questions and the outcome is picked for you, or choose one.</div>':''}
+function qOutH(c,f){const ks=qOuts(f);if(!ks.length)return'<div class="empty">Answer whether this person is your ICP to see the outcomes.</div>';return`<div class="qopts" role="radiogroup" aria-label="Outcome">${QOUT.filter(([k])=>ks.includes(k)).map(([k,l,d])=>`<label class="qopt ${f.out===k?'on':''} ${k==='noticp'?'warn':''}"><input type="radio" name="qout" data-qf="out" value="${k}" ${f.out===k?'checked':''}><b>${esc(l)}</b><span class="t">${esc(k==='lost'?'Held for the '+lostCoolN()+'-day cool-down, then back on your Today suggestions.':k==='later'?'Park it. It comes back on your Today suggestions on the date in your comment, or in '+(+R().laterDays||100)+' days.':d)}</span></label>`).join('')}</div><div id="qDet">${qDet(c,f)}</div>`}
+function qPaint(c,part){const f=qForm(c),e=document.getElementById({out:'qOut',det:'qDet',sum:'qSum',more:'qMore'}[part]);if(e)e.innerHTML=part==='out'?qOutH(c,f):part==='det'?qDet(c,f):part==='more'?qMoreH(f):qSum(f)}
+function qPickH(q){q=String(q||'').trim().toLowerCase();const sch=q.length<2;
+ const a=sch?contacts().filter(c=>['Scheduled','Rescheduled'].includes(mStat(c))&&!isDNC(c)).sort((x,y)=>(x.meetingNext||'').localeCompare(y.meetingNext||'')):contacts().filter(c=>!isDNC(c)&&c.stage!=='Left company'&&[c.name,c.email,c.account,c.title].join(' ').toLowerCase().includes(q));
+ return`${sch?`<div class="sub">${a.length?'Meetings on your calendar, or type at least 2 letters to find anyone in your book:':'Type at least 2 letters to find anyone in your book.'}</div>`:''}${a.slice(0,8).map(c=>`<button class="qpk" data-qgo="${esc(c.id)}" data-qpick="1"><b>${esc(c.name||c.email)}</b><span class="t">${esc(c.title||'')}${c.title?' · ':''}${esc(c.account||'')}${mStat(c)?' · meeting '+esc(mStat(c).toLowerCase())+' '+esc(mDateTxt(c)):''}${c.qual?' · qualified '+esc(fmt(istDay(c.qual.at))):''}</span></button>`).join('')}${!sch&&!a.length?'<div class="empty">Nobody matches. Add them on the Contacts page first.</div>':''}${a.length>8?`<div class="sub">${a.length-8} more: keep typing.</div>`:''}`}
+function qFormH(c){const f=qForm(c),t=today(),id=c.id;return`<div class="qgrid" data-qid="${esc(id)}">
+ <div class="panel"><h2>Questions</h2>
+ <div class="fl"><label for="qDt">Meeting held on</label><input type="date" id="qDt" data-qf="date" max="${t}" value="${esc(f.date)}"></div>
+ ${QQ.slice(0,1).map(([k,l,o])=>`<div class="fl qkey"><label for="q-${k}">${esc(l)}</label><select id="q-${k}" data-qf="${k}"><option value="">Choose…</option>${o.map(([v,lb])=>`<option value="${v}" ${f[k]===v?'selected':''}>${esc(lb)}</option>`).join('')}</select></div>`).join('')}
+ <div id="qMore">${qMoreH(f)}</div></div>
+ <div class="panel"><h2>Outcome</h2><div id="qOut">${qOutH(c,f)}</div><div class="bar-tools" style="margin-top:14px"><button class="p w" data-qsave="${esc(id)}">Save qualification</button><button data-qclose="1">Cancel</button></div></div></div>`}
+function vQualify(){const id=qid(),c=getC(id),back='<div class="bar-tools"><a href="#deals">‹ Deals</a></div>';
+ if(!c)return`<section class="band">${back}<h1>Qualify</h1><div class="empty">Contact not found.</div></section>`;
+ if(isDNC(c))return`<section class="band">${back}<h1>${esc(c.name||c.email)}</h1><div class="note">This lead is Do not contact${c.dncReason?': '+esc(c.dncReason):''}. Lift DNC in the contact panel before qualifying a meeting. <button data-open="${esc(id)}">Open contact</button></div></section>`;
+ const f=qForm(c),t=today(),q=c.qual,st=mStat(c),tl=items().filter(x=>x.c===id||(c.prevIds||[]).includes(x.c)).sort((a,b)=>(b.day+(b.t||'')).localeCompare(a.day+(a.t||''))).slice(0,6),cm=(c.comments||[]).slice(-5).reverse();
+ return`<section class="band" style="padding-bottom:6px">${back}<h1>Qualify ${esc(c.name||c.email)}</h1><div class="sub">${esc(c.title||'')}${c.title?' · ':''}<a href="#acct-${esc(slug(c.account))}">${esc(c.account||'')}</a>${st?' · meeting '+esc(st.toLowerCase())+' '+esc(mDateTxt(c)):''}. Is this person your ICP, and is the deal worth pushing to the next round?${q?' Last qualified '+esc(fmt(istDay(q.at)))+': '+esc(QOL(q)||q.out)+'.':''}</div></section>
+ <section class="band">${qFormH(c)}</section>
+ 
+ <section class="band grid2"><div class="panel"><h2>What has happened so far</h2><div class="sub">${pl(c.emails||0,'email')} synced from your mail${c.lastEmail?' · last '+esc(fmt(c.lastEmail)):''}${c.calls?' · '+pl(c.calls,'call'):''}${c.lastSubject?' · “'+esc(c.lastSubject)+'”':''}</div>
+ <ul class="tl">${tl.map(x=>`<li><b>${esc(fmt(x.day))}</b> ${esc(istTime(x.t))} · ${esc(x.ch||'Email')} · ${esc(x.k||'')}<span class="t">${esc(x.s||'')}</span></li>`).join('')||'<li class="empty">No touches logged yet.</li>'}</ul></div>
+ <div class="panel"><h2>Latest comments</h2><ul class="tl">${cm.map(x=>`<li><b>${esc(fmt(istDay(x.t)))}</b> ${esc(istTime(x.t))} IST<span class="t" style="color:var(--ink)">${esc(x.x)}</span></li>`).join('')||'<li class="empty">No comments yet.</li>'}</ul></div></section>`}
+async function qSave(id){const c=getC(id);if(!c)return;if(isDNC(c)){flash('This lead is Do not contact.');return}
+ const f=qForm(c),t=today(),now=new Date().toISOString();
+ if(!f.date||f.date>t){flash('Pick the date the meeting was conducted, on or before today.');return}
+ if(!f.icp){flash('Answer the first question: is this person in your ICP?');return}
+ if(!f.out||!qOuts(f).includes(f.out)){flash('Pick an outcome.');return}
+ if(f.out==='deal'&&f.icp==='no'){flash('A lead outside your ICP cannot be pushed to a deal. Change the ICP answer or pick Not ICP.');return}
+ let dv=null;if(f.out==='deal'){const p=parseUSD(f.dval);if(!p.ok){flash(p.msg);return}dv=p.v;if(f.ncd&&f.ncd<t){flash('Pick today or a future date for the next call.');return}if(f.act==='email'&&!c.email){flash('No email address on file for this lead.');return}}
+ const fit=qFit(f),note=f.note.trim(),qual={at:now,date:f.date,dstage:f.out==='deal'?f.dstage:'',icp:f.icp,role:f.role,need:f.need,budget:f.budget,time:f.time,worth:f.worth,out:f.out,fit,note};
+ let k=0;const ts=()=>new Date(Date.now()+(k++)).toISOString(),cm=[...(c.comments||[])];
+ if(!(mStat(c)==='Conducted'&&c.meetingDate===f.date))cm.push({t:ts(),x:'Meeting conducted on '+fmt(f.date)+'.'});
+ cm.push({t:ts(),x:'Qualification: '+qText(f)+' · fit '+fit+'/10. Outcome: '+QOL(f)+'.'});
+ const base={qual,meetingDate:f.date,meetingNext:'',stageLocked:true,qualPending:false,dealRemoved:false};let patch,msg,item=null;
+ if(f.out==='deal'){if(note)cm.push({t:ts(),x:note});
+  patch={...base,mtgStatus:'Conducted',stage:DSTG[f.dstage],dealStage:f.dstage,dealStageAt:t,lostAt:'',warmDoneAt:'',snoozeUntil:'',snoozeWhy:'',nextCallManual:f.ncd||''};if(dv!==null){patch.dealValue=dv;patch.dealValueAt=t}
+  if(f.act==='call'){Object.assign(patch,{myReachOut:mx(c.myReachOut,t),calls:(c.calls||0)+1,callOutcome:f.callOut,lastChannel:'Call'});item={ch:'Call',k:'Call',s:f.callOut+' · after the qualification'}}
+  if(f.act==='email'){const sub=f.emSub.trim()||'Follow-up after our meeting';Object.assign(patch,{lastEmail:mx(c.lastEmail,t),lastSubject:sub,lastChannel:'Email'});item={ch:'Email',k:'Manual',s:sub}}
+  msg='Qualified and pushed to '+f.dstage+(dv!==null?' · '+usd(dv):'')+(f.ncd?'. Next call '+fmt(f.ncd):'')+(item?'. '+item.ch+' logged':'')+'.'}
+ else if(f.out==='later'){const w=qLater(f);qual.until=w.d;cm.push({t:ts(),x:'Parked: back on your suggestions on '+fmt(w.d)+(note?'. They said: '+note:'. No timeline given.')});
+  patch={...base,mtgStatus:'',stage:'Nurture',dealStage:'',dealStageAt:t,snoozeUntil:w.d,snoozeWhy:'Not right now: parked after the meeting',nextCallManual:'',nextStep:'',nextStepDate:'',warmDoneAt:'',recur:null};msg='Parked. Back on your Today suggestions on '+fmtY(w.d)+'.'}
+ else if(f.out==='noticp'){if(note)cm.push({t:ts(),x:note});cm.push({t:ts(),x:'Not ICP: personal details removed. Name, company and comments kept so they stay on Do not contact.'});
+  patch={name:c.name||'',account:c.account||'',purged:true,purgedAt:t,dnc:true,dncReason:'Not ICP (qualified after the meeting)',dncDate:t,dncLifted:'',stage:'Do not contact',stageLocked:true,qual:{at:now,date:f.date,icp:'no',out:'noticp'},source:'Not ICP: details removed'};msg=(c.name||'Lead')+' is not ICP: details removed and moved to Do not contact. Comments kept.'}
+ else{const w=qLost(f);cm.push({t:ts(),x:'Deal lost'+(note?': '+note:'.')});patch={...base,mtgStatus:'Conducted',stage:'Meeting conducted',dealStage:'Lost',dealStageAt:t,lostAt:t,warmDoneAt:'',nextStep:'',nextStepDate:'',nextCallManual:'',snoozeUntil:''};msg='Marked lost. Back on your Today suggestions on '+fmtY(w.d)+'.'}
+ patch.comments=cm;
+ if(patch.purged){try{await S.db.doc('contacts/'+id).set(patch)}catch(e){denied(e);return}}else if(!await upd(id,patch))return;
+ if(![...S.meet.values()].some(m=>m.c===id&&m.date===f.date))await setMeeting(id,c,f.date);
+ if(item)await addItem(t,{c:id,n:c.name||'',a:c.account||'',...item,t:now});
+ await addItem(t,{c:id,n:c.name||'',a:c.account||'',ch:'Outcome',k:'Qualified',s:QOL(f),t:ts()});
+ delete S.qf[id];S.qLog=false;S.qPickQ='';S.qOpen=null;if(view()==='deals')render();else location.hash='deals';flash(msg)}
 // ---------- today
 const BLOCK=['Not interested','Left company','Bounced','Meeting scheduled','Meeting conducted','Proposal','Replied','Connected'];
 const byScore=(a,b)=>score(b)-score(a)||(a.name||'').localeCompare(b.name||'');
@@ -792,7 +995,7 @@ function ocCell(c,ch,done){const rec=S.plan&&S.plan.outcomes&&S.plan.outcomes[c.
  let h=`<select data-oc="${esc(c.id)}" data-ch="${esc(ch)}" aria-label="Outcome for ${esc(c.name||'')}" ${isDNC(c)&&!rec?'disabled':''}><option value="">${done&&!rec?'Sent · record outcome':'Record outcome'}</option>${OUTC.map(([k,l])=>`<option value="${k}" ${k===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
  if(rec&&!pend)h+=`<span class="t">Recorded ${esc(istTime(rec.at))} IST${rec.until?' · back on '+esc(fmt(rec.until)):''}</span>`;
  if(pend&&pend.o==='mtg')h+=`<div class="mf"><input type="date" data-ocd="${esc(c.id)}" min="${today()}" aria-label="Meeting date"><button class="p w" data-ocsave="${esc(c.id)}">Save</button></div>`;
- else if(pend)h+=`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;align-items:center"><input type="date" data-ocd="${esc(c.id)}" min="${today()}" aria-label="Reach out again on"><span class="t" style="display:inline">or</span><input type="month" data-ocm="${esc(c.id)}" aria-label="Or a month"><span class="t" style="display:inline">or snooze</span><button class="w" data-ocq="${esc(c.id)}" data-n="3">3 mo</button><button class="w" data-ocq="${esc(c.id)}" data-n="4">4 mo</button><button class="w" data-ocq="${esc(c.id)}" data-n="5">5 mo</button><button class="p w" data-ocsave="${esc(c.id)}">Save</button></div>`;
+ else if(pend)h+=`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;align-items:center"><input type="date" data-ocd="${esc(c.id)}" min="${calTomorrow()}" aria-label="Reach out again on"><span class="t" style="display:inline">or</span><input type="month" data-ocm="${esc(c.id)}" min="${calNextMonth()}" aria-label="Or a month"><span class="t" style="display:inline">or snooze</span><button class="w" data-ocq="${esc(c.id)}" data-n="3">3 mo</button><button class="w" data-ocq="${esc(c.id)}" data-n="4">4 mo</button><button class="w" data-ocq="${esc(c.id)}" data-n="5">5 mo</button><button class="p w" data-ocsave="${esc(c.id)}">Save</button></div>`;
  return h}
 async function applyOutcome(id,ch,o,until){const c0=getC(id);if(!c0)return;const t=today(),now=new Date().toISOString(),r=R();
  if(isDNC(c0)&&o!=='dnc'){flash('This lead is Do not contact.');return}
@@ -868,13 +1071,13 @@ function vContacts(fa){const f=S.f,accs=[...new Set(contacts().map(c=>c.account|
  ${shown.map(c=>`<tr class="row" data-id="${esc(c.id)}"><td><button class="nm" data-open="${esc(c.id)}">${esc(c.name||c.email)}</button><span class="t">${esc(c.title||'')}</span><span class="t">Score ${score(c)}${isStale(c)?' · <b class="over">Stale</b>':''}${dupSet().has(c.id)?' · <b class="over">Possible duplicate</b>':''}</span></td><td>${esc(c.account||'')}</td><td>${needsEmail(c)?`<span class="t">${esc(c.email||'No email')}</span><span style="display:flex;gap:4px;flex-wrap:wrap"><input data-fix="${esc(c.id)}" type="email" placeholder="Correct email" aria-label="Correct email for ${esc(c.name)}" style="max-width:180px"><button class="w" data-fixsave="${esc(c.id)}">Save</button></span>`:`<span class="t" style="color:var(--ink)">${esc(c.email||'')}</span>`}</td><td class="n">${esc(c.phone||'')}</td><td>${tzSel(c)}</td>
  <td><select data-f="stage" aria-label="Stage">${STAGES.map(s=>`<option ${s===(c.stage||'Emailed')?'selected':''}>${esc(s)}</option>`).join('')}</select>${c.sheetStatus?`<span class="t">Sheet: ${esc(c.sheetStatus)}</span>`:''}</td>
  <td class="n">${eCnt(c)}<span class="t">${esc(fmt(lastE(c)))}</span></td>
- <td><input type="date" data-f="reach" value="${esc(c.myReachOut||'')}" aria-label="Date you reached out" ${isDNC(c)?'disabled title="Do not contact"':''}></td>
+ <td><input type="date" data-f="reach" value="${esc(c.myReachOut||'')}" max="${today()}" aria-label="Date you reached out" ${isDNC(c)?'disabled title="Do not contact"':''}></td>
  <td>${nextCell(c)}</td><td><span class="t">${c.lastOutcome?esc(c.lastOutcome)+(snoozed(c)?' · back '+esc(fmt(c.snoozeUntil)):'')+'<br>':''}${esc((c.notes||c.sheetStatus||c.note||'').slice(0,90))}</span></td></tr>`).join('')}
  </tbody></table></div>${a.length>shown.length?`<p><button id="more">Show ${Math.min(200,a.length-shown.length)} more</button></p>`:''}${a.length?'':'<div class="empty">No contacts match.</div>'}</section>`}
 // ---------- daily
 function vDaily(){const d=S.day||today();const it=items().filter(x=>x.day===d).sort((a,b)=>(a.t||'').localeCompare(b.t||''));const by={};for(const x of it)(by[x.a||'Other']=by[x.a||'Other']||[]).push(x);
  const n=ch=>it.filter(x=>(x.ch||'Email')===ch).length;const ppl=new Set(it.map(x=>x.c)).size;
- return`<section class="band"><div class="bar-tools"><button id="dPrev" aria-label="Previous day">‹</button><input type="date" id="dPick" value="${esc(d)}" aria-label="Day"><button id="dNext" aria-label="Next day">›</button><button id="dToday">Today</button></div>
+ return`<section class="band"><div class="bar-tools"><button id="dPrev" aria-label="Previous day">‹</button><input type="date" id="dPick" value="${esc(d)}" max="${today()}" aria-label="Day"><button id="dNext" aria-label="Next day">›</button><button id="dToday">Today</button></div>
  <h2>${esc(D(d).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'}))}</h2>
  <div class="sub">${pl(ppl,'person','people')} · ${pl(n('Email'),'email')} · ${pl(n('Call'),'call')} · ${pl(n('LinkedIn'),'LinkedIn touch','LinkedIn touches')} (IST day)</div>
  ${Object.keys(by).length?Object.entries(by).map(([a,xs])=>`<h2 style="margin-top:18px">${esc(a)} <span class="sub">${xs.length}</span></h2><table class="stack"><thead><tr><th>Time IST</th><th>Who</th><th>Channel</th><th>Type</th><th>Subject or outcome</th></tr></thead><tbody>${xs.map(x=>`<tr class="row"><td class="n">${esc(istTime(x.t))}</td><td><button class="nm" data-open="${esc(x.c)}">${esc(x.n||x.c)}</button></td><td>${esc(x.ch||'Email')}</td><td>${esc(x.k||'')}</td><td>${esc(x.s||'')}</td></tr>`).join('')}</tbody></table>`).join(''):'<div class="empty">No outreach logged for this day.</div>'}</section>`}
@@ -889,22 +1092,25 @@ function drawer(){const id=S.sel,c=getC(id),el=document.getElementById('drawer')
  const p=plan(c),t=today();const tl=items().filter(x=>x.c===id||(c.prevIds||[]).includes(x.c)).sort((a,b)=>(b.day+(b.t||'')).localeCompare(a.day+(a.t||'')));const ms=allMeet().filter(m=>m.c===id||nkey(m.name)===nkey(c.name));
  el.innerHTML=`<div data-id="${esc(id)}"><button id="dClose" style="float:right">Close</button><h2 style="font-size:24px">${esc(c.name||c.email)}</h2>${isDeal(c)?chip(c.stage,c):''}<div class="sub">${esc(c.title||'')}</div><div class="sub">${esc(c.account||'')}${c.location?' · '+esc(c.location):''}</div><div class="sub">${esc(c.email||'')}${c.linkedin&&/^https:\/\//.test(c.linkedin)?` · <a href="${esc(c.linkedin)}">LinkedIn</a>`:''}</div>${c.sheetStatus?`<div class="note">Your sheet: ${esc(c.sheetStatus)}${c.prev?' · previous exposure: '+esc(c.prev):''}</div>`:''}${c.sheetRemarks?`<div class="sub">${esc(c.sheetRemarks)}</div>`:''}
  ${needsEmail(c)?`<div class="note"><b>Email update needed.</b> ${esc(c.email||'No email on file')} ${c.email?'bounced':''}. Enter the correct address: it replaces the old one, keeps this lead's history and puts them back on the email list.<div class="row2" style="margin-top:8px"><input id="fixIn" type="email" placeholder="Correct email address" aria-label="Correct email address"><button class="p w" id="fixSave">Save email</button></div></div>`:''}${c.prevEmails&&c.prevEmails.length?`<div class="sub">Previous email: ${esc(c.prevEmails.join(', '))}</div>`:''}
- ${isDNC(c)?`<div class="block"><b>Do not contact.</b> ${esc(c.dncReason||'Marked do not contact')}${c.dncDate?' · '+esc(fmt(c.dncDate)):''}. Every channel is blocked: this lead is off all lists and touches cannot be logged.<div style="margin-top:8px"><label><input type="checkbox" id="liftOk"> They asked to be contacted again</label> <button class="w" id="liftDnc">Lift DNC</button></div></div>`:(blockReason(c,'Call')?`<div class="note"><b>Paused:</b> ${esc(blockReason(c,'Call'))}</div>`:'')}
+ ${c.purged?`<div class="note">Details removed on ${esc(fmt(c.purgedAt))}: not your ICP. Only the name, company and comments are kept.</div>`:''}${isDNC(c)?`<div class="block"><b>Do not contact.</b> ${esc(c.dncReason||'Marked do not contact')}${c.dncDate?' · '+esc(fmt(c.dncDate)):''}. Every channel is blocked: this lead is off all lists and touches cannot be logged.<div style="margin-top:8px"><label><input type="checkbox" id="liftOk"> They asked to be contacted again</label> <button class="w" id="liftDnc">Lift DNC</button></div></div>`:(blockReason(c,'Call')?`<div class="note"><b>Paused:</b> ${esc(blockReason(c,'Call'))}</div>`:'')}
  ${snoozed(c)?`<div class="note"><b>${esc(c.snoozeWhy||'Snoozed')}</b> until ${esc(fmt(c.snoozeUntil))}: off every list until then. <button class="w" id="wake">Bring back now</button></div>`:''}${c.lastOutcome?`<div class="sub">Last outcome: ${esc(c.lastOutcome)} · ${esc(fmt(c.lastOutcomeDate))}</div>`:''}
  <div class="sub">Lead score ${score(c)} / 100${isStale(c)?' · <b>stale</b>: no touch in '+daysAgo(lastTouch(c))+' days':''}${c.ooo?' · out of office: '+esc(c.ooo):''}</div>
  <div class="row2"><div class="fl"><label for="dTi">Title</label><input id="dTi" data-f="title" value="${esc(c.title||'')}"></div><div class="fl"><label for="dLo">Location</label><input id="dLo" data-f="location" value="${esc(c.location||'')}"></div></div>
  <div class="row2"><div class="fl"><label>Time zone</label>${tzSel(c)}</div><div class="fl"><label for="dLi">LinkedIn URL</label><input id="dLi" data-f="linkedin" value="${esc(typeof c.linkedin==='string'?c.linkedin:'')}" placeholder="https://www.linkedin.com/in/…"></div></div>
  <div class="row2"><div class="fl"><label for="dSt">Stage</label><select id="dSt" data-f="stage">${STAGES.map(s=>`<option ${s===(c.stage||'Emailed')?'selected':''}>${esc(s)}</option>`).join('')}</select></div><div class="fl"><label for="dPh">Phone</label><input id="dPh" data-f="phone" value="${esc(c.phone||'')}"></div></div>
  <div class="note"><b>Next best call:</b> ${p?`${esc(fmt(p.d))}${p.over?' (overdue, call today)':''} · ${esc(winText(c))}<br><span class="t">${esc(p.why)}</span>`:'none needed at this stage'}</div>
- <div class="row2"><div class="fl"><label for="dNC">Set your own next call date</label><input type="date" id="dNC" data-f="nextCallManual" value="${esc(c.nextCallManual||'')}"></div><div class="fl"><label>&nbsp;</label><button class="w" id="dNCx">Use suggested date</button></div></div>
+ <div class="row2"><div class="fl"><label for="dNC">Set your own next call date</label><input type="date" id="dNC" data-f="nextCallManual" value="${esc(c.nextCallManual||'')}" min="${today()}" aria-label="Your next call date"></div><div class="fl"><label>&nbsp;</label><button class="w" id="dNCx">Use suggested date</button></div></div>
  <h2 style="margin-top:16px">Comments</h2>${(()=>{const sg=inMtg(c)?nsOf(c):null;return sg?`<div class="note"><b>Suggested next touch:</b> ${esc(sg.txt)} · ${esc(fmt(sg.d))}${sg.why?'<br><span class="t">'+esc(sg.why)+'</span>':''}</div>`:''})()}
  ${inMtg(c)?`<div class="fl"><label>Meeting status</label>${mStatCell(c)}</div><div class="fl"><label>Next step</label>${nsCell(c)}</div>`:''}${isDeal(c)?`<div class="row2"><div class="fl"><label>Deal stage</label>${dStageCell(c)}</div><div class="fl"><label>Deal value (USD)</label>${dValCell(c)}</div></div>`:''}
+ ${(isDeal(c)||c.qual)&&!isDNC(c)?`<div class="note"><b>Qualification:</b> ${c.qual?esc(fmt(istDay(c.qual.at))+' · '+qText(c.qual)+' · fit '+(c.qual.fit||0)+'/10 · '+QOL(c.qual))+(c.qual.out==='later'&&c.qual.until?' · back on your suggestions '+esc(fmtY(c.qual.until)):''):'not qualified yet'}<div style="margin-top:6px"><button class="${needsQual(c)?'p':''}" data-qgo="${esc(id)}">${needsQual(c)?'Qualify this deal':'Open qualification'}</button></div></div>`:''}
+ ${c.qual&&isDNC(c)&&c.qual.out==='noticp'?`<div class="sub">Qualified as not ICP on ${esc(fmt(istDay(c.qual.at)))}.</div>`:''}
+ ${isDNC(c)?'':c.dealRemoved?`<div class="note">Removed from the Deals page${c.dealRemovedAt?' on '+esc(fmt(c.dealRemovedAt)):''}. The contact, comments and meeting history are kept. <button class="w" data-dreadd="${esc(id)}">Put back on Deals</button></div>`:isDeal(c)?`<details><summary>Remove from the Deals page</summary><div class="sub">For duplicates or meetings that are not a deal. The contact, comments and meeting history stay, and you can put it back.</div><button class="dn w" data-drm="${esc(id)}">Remove from Deals</button></details>`:''}
  <div class="fl"><textarea id="cmIn" rows="3" placeholder="What happened, what they said, what you agreed…" aria-label="New comment"></textarea></div><button class="p w" id="cmAdd">Add comment</button>
  <ul class="tl">${(c.comments||[]).slice().reverse().map(x=>`<li><b>${esc(fmt(istDay(x.t)))}</b> ${esc(istTime(x.t))} IST<span class="t" style="color:var(--ink)">${esc(x.x)}</span></li>`).join('')||'<li class="empty">No comments yet.</li>'}</ul>
- <h2 style="margin-top:16px">Log a touch</h2><div class="row2"><div class="fl"><label for="lD">Date reached out</label><input type="date" id="lD" value="${esc(t)}"></div><div class="fl"><label for="lC">Channel</label><select id="lC"><option>Call</option><option>LinkedIn</option><option>Email</option></select></div></div>
+ <h2 style="margin-top:16px">Log a touch</h2><div class="row2"><div class="fl"><label for="lD">Date reached out</label><input type="date" id="lD" value="${esc(t)}" max="${t}" aria-label="Date reached out"></div><div class="fl"><label for="lC">Channel</label><select id="lC"><option>Call</option><option>LinkedIn</option><option>Email</option></select></div></div>
  <div class="fl"><label for="lO">Outcome</label><select id="lO">${OUT.map(o=>`<option>${esc(o)}</option>`).join('')}<option>Message sent</option></select></div><button class="p w" id="lSave" ${isDNC(c)?'disabled':''}>Log touch</button>
  ${isDNC(c)?'':`<details><summary>Mark as Do not contact</summary><div class="row2"><select id="dncR"><option>Asked to unsubscribe</option><option>Said do not contact</option><option>Wrong person, asked not to be contacted</option><option>Legal or compliance request</option><option>Company-wide request</option></select><button class="dn w" id="markDnc">Mark Do not contact</button></div></details>`}
- <h2 style="margin-top:16px">Meeting</h2><div class="row2"><div class="fl"><label for="mD">Meeting date</label><input type="date" id="mD" value="${esc(c.meetingDate||c.meetingNext||t)}"></div><div class="fl"><label>&nbsp;</label><button class="p w" id="mDone">Mark meeting conducted</button></div></div><button class="w" id="mSch">Mark meeting scheduled for this date</button>
+ <h2 style="margin-top:16px">Meeting</h2><div class="row2"><div class="fl"><label for="mD">Meeting date</label><input type="date" id="mD" value="${esc(c.meetingDate||c.meetingNext||t)}" aria-label="Meeting date"></div><div class="fl"><label>&nbsp;</label><button class="p w" id="mDone">Mark meeting conducted</button></div></div><button class="w" id="mSch">Mark meeting scheduled for this date</button>
  ${ms.length?`<ul class="tl">${ms.map(m=>`<li>Meeting ${esc(m.date?fmt(m.date):monL(m.month))} · ${esc({log:'from your meetings log',mail:'found in your sent mail',crm:'marked here'}[m.src])}${m.key?` <button class="w" data-delm="${esc(m.key)}">Remove</button>`:''}</li>`).join('')}</ul>`:''}
  <div class="fl"><label for="dNo">Notes</label><textarea id="dNo" data-f="notes" rows="4">${esc(c.notes||'')}</textarea></div>
  <h2 style="margin-top:16px">History</h2><div class="sub">${c.emails||0} emails · first ${esc(fmt(c.firstEmail)||'n/a')} · last ${esc(fmt(c.lastEmail)||'n/a')}${c.calls?` · ${c.calls} calls`:''}</div>
@@ -927,15 +1133,21 @@ async function fixEmail(id,val){const ne=String(val||'').trim().toLowerCase();if
  delete nd.movedTo;if(c.stage==='Bounced'){nd.stage=eCnt(c)?'Follow-up':'Emailed';nd.stageLocked=false}
  try{await S.db.doc('contacts/'+ne).set(nd);if(S.c.has(id))await S.db.doc('contacts/'+id).update({movedTo:ne});else await S.db.doc('contacts/'+id).set({movedTo:ne,name:c.name||'',account:c.account||''});if(S.sel===id)S.sel=ne;flash('Email updated for '+(c.name||'contact')+'. They are back on the email list.')}catch(e){denied(e)}}
 async function stageTo(id,st){const c=getC(id);if(!c)return;const patch={stage:st,stageLocked:true};if(!['Meeting scheduled','Meeting conducted','Proposal'].includes(st)&&['Conducted','Scheduled','Rescheduled'].includes(c.mtgStatus||mStat(c)))patch.mtgStatus='';
- if(st==='Meeting conducted'){const d=c.meetingDate||today();patch.meetingDate=d;await upd(id,patch);if(![...S.meet.values()].some(m=>m.c===id&&m.date===d))await setMeeting(id,c,d);return}
+ if(st==='Meeting conducted'){const d=c.meetingDate||today();patch.meetingDate=d;if(!DSTAGE.includes(c.dealStage))patch.qualPending=true;await upd(id,patch);if(![...S.meet.values()].some(m=>m.c===id&&m.date===d))await setMeeting(id,c,d);return}
  if(['Meeting conducted','Proposal'].includes(c.stage)&&st!=='Proposal'&&c.meetingDate){for(const [k,m] of S.meet)if(m.c===id&&m.date===c.meetingDate&&!m.auto){try{await S.db.doc('meetings/'+k).delete()}catch(e){denied(e)}}}
  await upd(id,patch)}
 // ---------- events
-document.addEventListener('click',async e=>{const g=e.target.closest('[data-go],[data-st],[data-ml]');
+document.addEventListener('click',async e=>{{const k=e.target.closest('[data-qfirst]');if(k&&!e.target.closest('button,a')){const c1=contacts().filter(needsQual).sort((x,y)=>(y.meetingDate||'').localeCompare(x.meetingDate||''))[0];if(c1)qGo(c1.id,{});return}}
+ const g=e.target.closest('[data-go],[data-st],[data-ml]');
  if(g&&!e.target.closest('button,a,select,input')){if(g.dataset.ml){const [id,l]=g.dataset.ml.split('|');if(/Meet/.test(id)){S.selMonth=l;render()}else{S.day=l;location.hash='daily'}return}
   if(g.dataset.st){S.f.st=g.dataset.st;S.f.show='';S.limit=200;if(view()==='acct'){render();setTimeout(()=>document.getElementById('q')?.scrollIntoView({behavior:'smooth'}),60)}else location.hash='contacts';return}
   const [v,q]=g.dataset.go.split('|');S.f={...S.f,q:'',acc:'',st:'',show:''};if(q){const [k,val]=q.split('=');S.f[k]=val}S.limit=200;if(location.hash==='#'+v)render();else location.hash=v;return}
  const b=e.target.closest('button,[data-open]');if(!b)return;
+ if(b.dataset.qgo){const qc=getC(b.dataset.qgo);qGo(b.dataset.qgo,b.dataset.qpick&&qc&&mStat(qc)==='Conducted'&&!needsQual(qc)?{date:today()}:{});return}
+ if(b.dataset.qsave){await qSave(b.dataset.qsave);return}
+ if(b.dataset.qclose){if(S.qOpen)delete S.qf[S.qOpen];S.qOpen=null;if(view()==='qualify')location.hash='deals';else render();return}
+ if(b.dataset.drm||b.dataset.dreadd){const id2=b.dataset.drm||b.dataset.dreadd,c2=getC(id2),rm=!!b.dataset.drm;if(!c2)return;if(await upd(id2,{dealRemoved:rm,dealRemovedAt:rm?today():'',comments:[...(c2.comments||[]),{t:new Date().toISOString(),x:rm?'Removed from the Deals page.':'Put back on the Deals page.'}]}))flash((c2.name||'Lead')+(rm?' removed from Deals. The contact and history stay.':' is back on Deals.'));return}
+ if(b.dataset.qlog){S.qLog=!S.qLog;render();if(S.qLog)requestAnimationFrame(()=>{const q=document.getElementById('qPick');if(q)q.focus()});return}
  if(b.dataset.open){S.sel=b.dataset.open;drawer();return}
  if(b.id==='more'){S.limit+=200;render();return}
  if(b.dataset.dview){S.dView=b.dataset.dview;render();return}
@@ -946,7 +1158,7 @@ document.addEventListener('click',async e=>{const g=e.target.closest('[data-go],
  if(b.dataset.warm){await warmDone(b.dataset.warm,b.dataset.ch);return}
  if(b.dataset.dlost){const id2=b.dataset.dlost,c2=getC(id2);if(!c2)return;if(isDNC(c2)){flash('This lead is Do not contact.');return}const why=((b.parentElement.querySelector('[data-lostwhy]')||{}).value||'').trim(),t2=today(),now=new Date().toISOString(),cm2=[...(c2.comments||[]),{t:now,x:'Deal lost'+(why?': '+why:'.')}];
   const patch={dealStage:'Lost',dealStageAt:t2,lostAt:t2,warmDoneAt:'',mtgStatus:'Conducted',stage:'Meeting conducted',stageLocked:true,nextStep:'',nextStepDate:'',comments:cm2};await upd(id2,patch);delete S.dpend[id2];
-  const w=warmOf({...c2,...patch});flash(w?'Deal marked lost. Warm connect on '+fmt(w.d)+', on your Today page.':'Deal marked lost and held for '+R().niCool+' days. Add a comment like “reach out in March” to plan a warm connect.');render();return}
+  const w=warmOf({...c2,...patch});flash(w?'Deal marked lost. Back on your Today suggestions on '+fmtY(w.d)+(w.said?', from your comment.':' after the '+lostCoolN()+'-day cool-down.'):'Deal marked lost and held for '+lostCoolN()+' days.');render();return}
  if(b.id==='anAdd'||b.id==='anSave'){const a=curAcc();if(!a)return;const k=slug(a),cur=S.acc.get(k)||{},now=new Date().toISOString();const doc={...cur,name:a};
   if(b.id==='anAdd'){const x=document.getElementById('anIn').value.trim();if(!x){flash('Write a note first.');return}doc.comments=[...(cur.comments||[]),{t:now,x}]}else{doc.nextStep=document.getElementById('anS').value.trim();doc.nextStepDate=document.getElementById('anD').value}
   try{await S.db.doc('accounts/'+k).set(doc);flash(b.id==='anAdd'?'Account comment added.':'Account next step saved.')}catch(er){denied(er)}return}
@@ -975,7 +1187,7 @@ document.addEventListener('click',async e=>{const g=e.target.closest('[data-go],
   if(c.stage==='Not interested'&&o==='Spoke')Object.assign(patch,{stage:'Connected',stageLocked:false,niDate:'',snoozeUntil:'',snoozeWhy:''});
   if(['New','Emailed','Follow-up','Called','Bounced'].includes(c.stage||'Emailed')){if(o==='Spoke')patch.stage='Connected';else if(o==='Not interested')patch.stage='Not interested';else if(ch==='Call')patch.stage='Called'}
   if(!await upd(id,patch))break;await addItem(d,{c:id,n:c.name||'',a:c.account||'',ch,k:ch==='Email'?'Manual':ch,s:o,t:new Date().toISOString()});flash('Logged '+ch.toLowerCase()+' for '+(c.name||'')+(inbound&&dealLost(c)?'. The deal is still Lost: reopen it on the Deals page if it is back on.':''));break}
- case'mDone':{const d=document.getElementById('mD').value||today();if(d>today()){flash('A conducted meeting needs a date on or before today.');break}if(!await upd(id,{stage:'Meeting conducted',stageLocked:true,mtgStatus:'Conducted',meetingDate:d,meetingNext:''}))break;if(![...S.meet.values()].some(m=>m.c===id&&m.date===d))await setMeeting(id,c,d);flash('Meeting logged for '+fmt(d));break}
+ case'mDone':{const d=document.getElementById('mD').value||today();if(d>today()){flash('A conducted meeting needs a date on or before today.');break}if(isDNC(c)){flash('This lead is Do not contact.');break}if(!DSTAGE.includes(c.dealStage)||c.dealStage==='Lost'){qGo(id,{date:d});flash('Qualify the meeting: save it to log it as conducted.');break}if(!await upd(id,{stage:'Meeting conducted',stageLocked:true,mtgStatus:'Conducted',meetingDate:d,meetingNext:''}))break;if(![...S.meet.values()].some(m=>m.c===id&&m.date===d))await setMeeting(id,c,d);flash('Meeting logged for '+fmt(d));break}
  case'mSch':{const d=document.getElementById('mD').value;if(!d||d<today()){flash('Pick today or a future date for the meeting.');break}if(await upd(id,{stage:'Meeting scheduled',stageLocked:true,mtgStatus:'Scheduled',meetingNext:d,snoozeUntil:'',nextCallManual:'',comments:[...(c.comments||[]),{t:new Date().toISOString(),x:'Meeting scheduled for '+fmt(d)+'.'}]}))flash('Meeting scheduled for '+fmt(d)+'.');break}
  case'csv':{const a=filtered(),h=['Name','Title','Account','Email','Phone','Location','Stage','Emails','Last email','Reached out on','Next best call','Call window','Notes'];const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
   const txt=[h.map(q).join(',')].concat(a.map(c=>{const p=plan(c);return[c.name,c.title,c.account,c.email,c.phone,c.location,c.stage,c.emails||0,c.lastEmail,c.myReachOut,p?p.d:'',winText(c),c.notes].map(q).join(',')})).join('\n');
@@ -990,10 +1202,13 @@ document.addEventListener('click',async e=>{const g=e.target.closest('[data-go],
  case'dNext':S.day=iso(new Date(D(S.day||today()).getTime()+864e5));render();break;
  case'dToday':S.day=today();render();break}});
 document.addEventListener('change',async e=>{const el=e.target;
+ if(el.dataset.qf!==undefined){const box=el.closest('[data-qid]'),c2=box&&getC(box.dataset.qid);if(!c2)return;const f=qForm(c2),k=el.dataset.qf;f[k]=el.value;
+  if(k==='icp'){f.out=qAuto(f);qPaint(c2,'more');qPaint(c2,'out')}else if(k==='worth'){f.out=qAuto(f);qPaint(c2,'out')}else if(k==='out')qPaint(c2,'out');else if(k==='act'||k==='when')qPaint(c2,'det');
+  if(QPTS[k])qPaint(c2,'sum');return}
  if(['fAcc','fSt','fShow','fSort'].includes(el.id)){S.f[{fAcc:'acc',fSt:'st',fShow:'show',fSort:'sort'}[el.id]]=el.value;S.limit=200;render();return}
  if(el.id==='dPick'){S.day=el.value;render();return}
  if(el.id==='accJump'){location.hash='acct-'+el.value;return}
- if(el.dataset.ms!==undefined){const id=el.dataset.ms,c2=getC(id);if(c2&&el.value===mStat(c2)){delete S.mpend[id]}else S.mpend[id]={st:el.value};render();return}
+ if(el.dataset.ms!==undefined){const id=el.dataset.ms,c2=getC(id);if(c2&&el.value==='Conducted'&&['Scheduled','Rescheduled'].includes(mStat(c2))&&!DSTAGE.includes(c2.dealStage)){delete S.mpend[id];qGo(id,{date:c2.meetingNext&&c2.meetingNext<=today()?c2.meetingNext:today()});return}if(c2&&el.value===mStat(c2)){delete S.mpend[id]}else S.mpend[id]={st:el.value};render();return}
  if(el.dataset.nst!==undefined){await upd(el.dataset.nst,{nextStep:el.value.trim()});return}
  if(el.dataset.nsd!==undefined){await upd(el.dataset.nsd,{nextStepDate:el.value});return}
  if(el.dataset.dst!==undefined){await setDealStage(el.dataset.dst,el.value,false);return}
@@ -1009,13 +1224,18 @@ document.addEventListener('change',async e=>{const el=e.target;
  if(f==='reach'){const br=blockReason(c,'Call');if(br&&el.value){flash('Blocked by your CRM rules: '+br);el.value=c.myReachOut||'';return}if(el.value&&el.value>today()){flash('That date is in the future. Log a call on or before today.');el.value=c.myReachOut||'';return}if(!el.value){const u=c.reachUndo;if(u&&u.d===c.myReachOut){if(!await upd(id,{myReachOut:u.prev||'',calls:u.calls,stage:u.stage,stageLocked:!!u.locked,reachUndo:null}))return;try{const dr=S.db.doc('daily/'+u.d),s0=await dr.get();if(s0.exists){const a0=(s0.data().items||[]).filter(x=>!(x.c===id&&x.t===u.t));await dr.set({date:u.d,items:a0})}}catch(e){denied(e)}flash('Call removed.');return}return upd(id,{myReachOut:''})}if(el.value!==c.myReachOut){const ts=new Date().toISOString();if(!await upd(id,{myReachOut:el.value,lastChannel:'Call',calls:(c.calls||0)+1,nextCallManual:'',reachUndo:{d:el.value,prev:c.myReachOut||'',calls:c.calls||0,stage:c.stage||'Emailed',locked:!!c.stageLocked,t:ts},...(['New','Emailed','Follow-up','Bounced'].includes(c.stage||'Emailed')?{stage:'Called'}:{})}))return;await addItem(el.value,{c:id,n:c.name||'',a:c.account||'',ch:'Call',k:'Call',s:'Logged from contacts table',t:ts})}return}
  if(['nextCallManual','phone','tz','title','location','linkedin'].includes(f)){await upd(id,{[f]:el.value});if(f==='tz')flash(el.value?'Time zone saved: '+tzLabel(el.value):'Time zone cleared');return}
  if(f==='notes')return upd(id,{notes:el.value})});
-let qt;document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('[data-dval]')){e.target.classList.toggle('bad',!parseUSD(e.target.value).ok);return}if(e.target.id==='q'){clearTimeout(qt);qt=setTimeout(()=>{S.f.q=e.target.value;render();requestAnimationFrame(()=>{const q=document.getElementById('q');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length)}})},250)}});
+let qt;document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('[data-dval],[data-qf=dval]')){e.target.classList.toggle('bad',!parseUSD(e.target.value).ok)}
+ if(e.target.id==='qPick'){S.qPickQ=e.target.value;const r=document.getElementById('qPickRes');if(r)r.innerHTML=qPickH(e.target.value);return}
+ if(e.target.dataset&&e.target.dataset.qf!==undefined&&e.target.type!=='radio'){const box=e.target.closest('[data-qid]'),c2=box&&getC(box.dataset.qid);if(!c2)return;const f=qForm(c2),k=e.target.dataset.qf;f[k]=e.target.value;
+  if(k==='note'){if(!f.out&&f.icp&&f.icp!=='no'&&(NOWRX.test(f.note)||LATERX.test(f.note))){f.out='later';qPaint(c2,'out')}else if(f.out==='later'||f.out==='lost')qPaint(c2,'det')}
+  if(k==='emSub'){const a=document.getElementById('qOlk');if(a)a.href=olUrl(c2,f)}return}
+ if(e.target.matches&&e.target.matches('[data-dval]'))return;if(e.target.id==='q'){clearTimeout(qt);qt=setTimeout(()=>{S.f.q=e.target.value;render();requestAnimationFrame(()=>{const q=document.getElementById('q');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length)}})},250)}});
 document.getElementById('scrim').addEventListener('click',close);
 document.addEventListener('dragstart',e=>{const c=e.target.closest&&e.target.closest('[data-drag]');if(!c)return;if(!S.w){e.preventDefault();return}e.dataTransfer.setData('text/plain',c.dataset.drag);e.dataTransfer.effectAllowed='move';c.classList.add('drag')});
 document.addEventListener('dragend',e=>{const c=e.target.closest&&e.target.closest('[data-drag]');if(c)c.classList.remove('drag');for(const k of document.querySelectorAll('.kcol.over'))k.classList.remove('over')});
 document.addEventListener('dragover',e=>{const k=e.target.closest&&e.target.closest('[data-drop]');if(!k)return;e.preventDefault();e.dataTransfer.dropEffect='move';for(const o of document.querySelectorAll('.kcol.over'))if(o!==k)o.classList.remove('over');k.classList.add('over')});
 document.addEventListener('drop',async e=>{const k=e.target.closest&&e.target.closest('[data-drop]');if(!k)return;e.preventDefault();k.classList.remove('over');const id=e.dataTransfer.getData('text/plain');if(id)await setDealStage(id,k.dataset.drop,true)});
-document.addEventListener('keydown',e=>{if(e.target.matches&&e.target.matches('[data-dval]')){if(['.','-','+','e','E'].includes(e.key)){e.preventDefault();flash('Whole dollars only: no cents, decimals or minus signs.');return}if(e.key==='Enter'){e.preventDefault();e.target.blur();return}}if(e.key==='Escape')close();if(e.key==='Enter'&&e.target.matches('[data-fix],#fixIn')){e.preventDefault();const b=e.target.id==='fixIn'?document.getElementById('fixSave'):e.target.parentElement.querySelector('[data-fixsave]');b&&b.click()}});
+document.addEventListener('keydown',e=>{if(e.target.matches&&e.target.matches('[data-dval],[data-qf=dval]')){if(['.','-','+','e','E'].includes(e.key)){e.preventDefault();flash('Whole dollars only: no cents, decimals or minus signs.');return}if(e.key==='Enter'){e.preventDefault();e.target.blur();return}}if(e.key==='Escape')close();if(e.key==='Enter'&&e.target.matches('[data-fix],#fixIn')){e.preventDefault();const b=e.target.id==='fixIn'?document.getElementById('fixSave'):e.target.parentElement.querySelector('[data-fixsave]');b&&b.click()}});
 addEventListener('hashchange',()=>{close();S.limit=200;scrollTo(0,0);render()});
 // ---------- data
 (async()=>{const db=await SBX.use('db');if(!db){S.ready=true;document.getElementById('main').innerHTML='<div class="band empty">Sign in to claude.ai to see this CRM. The data lives in the page\'s database.</div>';document.getElementById('fresh').textContent='';return}
@@ -1031,7 +1251,85 @@ addEventListener('hashchange',()=>{close();S.limit=200;scrollTo(0,0);render()});
  db.doc('plan/'+today()).onSnapshot(s=>{S.plan=s.exists?s.data():null;if(!S._pl){S._pl=1;done()}else render()},()=>{if(!S._pl){S._pl=1;done()}});
  db.collection('accounts').onSnapshot(once(s=>{S.acc=new Map(s.docs.map(d=>[d.id,d.data()]))}),err);
  db.collection('meta').onSnapshot(once(s=>{for(const d of s.docs){if(d.id==='run')S.meta={run:d.data()};if(d.id==='config')S.cfg=d.data()}}),err)})();
-window.__T={S,plan,buildOut,todayData,score,blockReason,isDNC,tzOf,winIST,winText,suggest,nsOf,contacts,getC,today,addBD,isBD,R,mode,needsEmail,isStale,dupSet,allMeet,items,merge,render,draw,holName,reached,synced,lastTouch,mStat,inMtg,view,snoozed,filtered,eCnt,lastE,warmOf,warmWhen,dealHold,isDeal,dStage,dealLost,pipe,parseUSD,lostMeet,liN,manualN,setDealStage,dealBoard};
+window.__T={S,plan,buildOut,todayData,score,blockReason,isDNC,tzOf,winIST,winText,suggest,nsOf,contacts,getC,today,addBD,isBD,R,mode,needsEmail,isStale,dupSet,allMeet,items,merge,render,draw,holName,reached,synced,lastTouch,mStat,inMtg,view,snoozed,filtered,eCnt,lastE,warmOf,warmWhen,dealHold,isDeal,dStage,dealLost,pipe,parseUSD,lostMeet,liN,manualN,setDealStage,dealBoard,needsQual,qForm,qLater,qLost,qSave,qGo,dealHold};
+
+// ---------- calendar popup for date and month fields
+const CAL={el:null,inp:null,key:'',kind:'date',mode:'day',view:'',focus:'',min:'',max:'',sel:''};
+const calDOW=['Mo','Tu','We','Th','Fr','Sa','Su'],calMON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const calPlusM=(ym,n)=>{const x=D(ym.slice(0,7)+'-01');x.setUTCMonth(x.getUTCMonth()+n);return iso(x).slice(0,7)};
+const calNextMonth=()=>calPlusM(today(),1),calTomorrow=()=>iso(new Date(D(today()).getTime()+864e5));
+const calLong=d=>D(d).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+const calMonL=ym=>D(ym+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric',timeZone:'UTC'});
+function calKey(i){if(i.id)return'#'+CSS.escape(i.id);let k='input[type="'+i.getAttribute('type')+'"]';for(const a of i.attributes)if(a.name.startsWith('data-')||a.name==='aria-label')k+='['+a.name+'="'+CSS.escape(a.value)+'"]';return k}
+function calInp(){let i=CAL.inp;if(!i||!i.isConnected){i=document.querySelector(CAL.key);CAL.inp=i}return i}
+const calOk=v=>(!CAL.min||v>=CAL.min)&&(!CAL.max||v<=CAL.max);
+function calOn(){try{const g=getComputedStyle(document.documentElement).getPropertyValue('--g').trim();const m=g.match(/^#?([0-9a-f]{6})$/i);if(!m)return'#fff';const L=[0,2,4].map(i=>{const v=parseInt(m[1].slice(i,i+2),16)/255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}),l=.2126*L[0]+.7152*L[1]+.0722*L[2];return (1.05/(l+.05))>=((l+.05)/.0561)?'#fff':'#121212'}catch{return'#fff'}}
+function calQuick(){const t=today(),out=[],seen=new Set(),add=(l,v)=>{if(v&&calOk(v)&&!seen.has(v)&&out.length<5){seen.add(v);out.push([l,v])}};
+ if(CAL.kind==='month'){add('This month',t.slice(0,7));add('Next month',calPlusM(t,1));add('In 3 months',calPlusM(t,3));add('In 6 months',calPlusM(t,6));return out}
+ const past=!!CAL.max&&CAL.max<=t,fut=!!CAL.min&&CAL.min>=t,plus=n=>iso(new Date(D(t).getTime()+n*864e5));
+ add('Today',t);
+ if(past){add('Yesterday',plus(-1));add('Last working day',prevBD(t));add('A week ago',plus(-7))}
+ else if(fut){add('Tomorrow',plus(1));add('Next working day',addBD(t,1));add('In 1 week',plus(7));add('In 2 weeks',plus(14));add('In 1 month',calPlusM(t,1)+t.slice(7))}
+ else{add('Yesterday',plus(-1));add('Tomorrow',plus(1));add('Next working day',addBD(t,1));add('In 1 week',plus(7))}
+ return out}
+function calHint(){const t=today();if(CAL.max&&CAL.max<=t)return'Past dates only';if(CAL.min&&CAL.min>t)return CAL.kind==='month'?'From '+calMonL(CAL.min):'From '+fmt(CAL.min);if(CAL.min&&CAL.min>=t)return'Today or later';return''}
+function calDraw(){const el=CAL.el;if(!el)return;const t=today(),q=calQuick();let body='';
+ if(CAL.mode==='day'){const first=CAL.view+'-01',lead=(D(first).getUTCDay()+6)%7,start=iso(new Date(D(first).getTime()-lead*864e5));let cells='';
+  for(let k=0;k<42;k++){const d=iso(new Date(D(start).getTime()+k*864e5)),w=D(d).getUTCDay(),hn=holName(d),cls=[w===0||w===6?'wk':'',d.slice(0,7)!==CAL.view?'oth':'',d===t?'td':'',d===CAL.sel?'sel':'',hn?'hol':''].filter(Boolean).join(' ');
+   cells+=`<button type="button" data-d="${d}" class="${cls}" tabindex="${d===CAL.focus?0:-1}" ${calOk(d)?'':'disabled'} aria-label="${esc(calLong(d)+(hn?', '+hn:'')+(d===t?', today':''))}" aria-pressed="${d===CAL.sel}" ${hn?`title="${esc(hn)}"`:''}>${+d.slice(8)}</button>`}
+  body=`<div class="cal-h"><button type="button" class="cal-nav" data-cal="prev" aria-label="Previous month">‹</button><button type="button" class="cal-t" data-cal="mode" aria-label="Choose month and year">${esc(calMonL(CAL.view))}</button><button type="button" class="cal-nav" data-cal="next" aria-label="Next month">›</button></div>
+  ${q.length?`<div class="cal-q">${q.map(([l,v])=>`<button type="button" data-q="${v}" class="${v===CAL.sel?'on':''}">${esc(l)}</button>`).join('')}</div>`:''}
+  <div class="cal-w" aria-hidden="true">${calDOW.map(x=>`<span>${x}</span>`).join('')}</div><div class="cal-g" role="group" aria-label="${esc(calMonL(CAL.view))}">${cells}</div>`}
+ else{const y=+CAL.view.slice(0,4),months=calMON.map((m,i)=>{const ym=y+'-'+String(i+1).padStart(2,'0'),ok=CAL.kind==='month'?calOk(ym):(!CAL.max||ym<=CAL.max.slice(0,7))&&(!CAL.min||ym>=CAL.min.slice(0,7)),sel=CAL.sel&&CAL.sel.slice(0,7)===ym;
+   return`<button type="button" data-m="${ym}" class="${sel?'sel':''} ${ym===t.slice(0,7)?'td':''}" tabindex="${ym===CAL.focus.slice(0,7)?0:-1}" ${ok?'':'disabled'} aria-label="${esc(calMonL(ym))}" aria-pressed="${!!sel}">${m}</button>`}).join('');
+  body=`<div class="cal-h"><button type="button" class="cal-nav" data-cal="prevY" aria-label="Previous year">‹</button><button type="button" class="cal-t" data-cal="${CAL.kind==='month'?'':'mode'}" aria-label="${y}">${y}${CAL.kind==='month'?'':'<span>back to days</span>'}</button><button type="button" class="cal-nav" data-cal="nextY" aria-label="Next year">›</button></div>
+  ${CAL.kind==='month'&&q.length?`<div class="cal-q">${q.map(([l,v])=>`<button type="button" data-q="${v}" class="${v===CAL.sel?'on':''}">${esc(l)}</button>`).join('')}</div>`:''}<div class="cal-m" role="group" aria-label="${y}">${months}</div>`}
+ const hint=calHint();
+ el.innerHTML=body+`<div class="cal-f"><span>${hint?esc(hint):''}${CAL.mode==='day'?`${hint?' · ':''}<i>holiday</i>`:''}</span><span>${CAL.sel?'<button type="button" data-cal="clear">Clear</button>':''}<button type="button" data-cal="close">Close</button></span></div>`}
+function calPlace(){const el=CAL.el,i=calInp();if(!el)return;if(!i){calClose();return}
+ if(matchMedia('(max-width:600px)').matches){el.classList.add('sheet');el.style.top='';el.style.left='';return}el.classList.remove('sheet');
+ const r=i.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight){calClose();return}
+ const w=el.offsetWidth,hh=el.offsetHeight;let top=r.bottom+6;if(top+hh>innerHeight-8&&r.top-hh-6>8)top=r.top-hh-6;top=Math.max(8,Math.min(top,innerHeight-hh-8));
+ el.style.top=top+'px';el.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px'}
+function calFocus(){const b=CAL.el&&CAL.el.querySelector(CAL.mode==='day'?`[data-d="${CAL.focus}"]`:`[data-m="${CAL.focus.slice(0,7)}"]`);if(b)b.focus({preventScroll:true})}
+function calOpen(i,kb,touch){calClose();if(i.disabled||(i.readOnly&&!touch))return;CAL.inp=i;CAL.key=calKey(i);CAL.kind=i.getAttribute('type')==='month'?'month':'date';CAL.min=i.min||'';CAL.max=i.max||'';CAL.sel=i.value||'';
+ const t=today(),base=CAL.sel||(CAL.kind==='month'?(calOk(t.slice(0,7))?t.slice(0,7):(CAL.min||t.slice(0,7))):(calOk(t)?t:(CAL.min&&CAL.min>t?CAL.min:(CAL.max||t))));
+ CAL.view=base.slice(0,7);CAL.focus=CAL.kind==='month'?base.slice(0,7)+'-01':base;CAL.mode=CAL.kind==='month'?'month':'day';
+ const el=document.createElement('div');el.className='cal';el.setAttribute('role','dialog');el.setAttribute('aria-label',(i.getAttribute('aria-label')||'Choose a date')+': calendar');el.style.setProperty('--cal-on',calOn());
+ CAL.el=el;document.body.appendChild(el);calDraw();calPlace();i.setAttribute('aria-expanded','true');if(kb)calFocus();
+ el.addEventListener('pointerdown',e=>{if(!e.target.closest('button'))e.preventDefault()});
+ el.addEventListener('click',calClick);el.addEventListener('keydown',calKeys)}
+function calClose(refocus){const i=CAL.inp&&CAL.inp.isConnected?CAL.inp:(CAL.key?document.querySelector(CAL.key):null);if(CAL.el){CAL.el.remove();CAL.el=null}for(const r of document.querySelectorAll('[data-cal-ro]')){r.readOnly=false;r.removeAttribute('data-cal-ro')}if(i){i.setAttribute('aria-expanded','false');if(refocus)i.focus({preventScroll:true})}CAL.inp=null}
+function calPick(v){const i=calInp();if(!i){calClose();return}i.value=v;i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}));calClose(false)}
+function calClick(e){e.stopPropagation();const b=e.target.closest('button');if(!b||b.disabled)return;const a=b.dataset.cal;
+ if(b.dataset.d){calPick(b.dataset.d);return}
+ if(b.dataset.q){calPick(b.dataset.q);return}
+ if(b.dataset.m){if(CAL.kind==='month'){calPick(b.dataset.m);return}CAL.view=b.dataset.m;CAL.mode='day';CAL.focus=calOk(CAL.focus)&&CAL.focus.slice(0,7)===b.dataset.m?CAL.focus:b.dataset.m+'-01';calDraw();calPlace();calFocus();return}
+ if(a==='prev'||a==='next'){CAL.view=calPlusM(CAL.view,a==='prev'?-1:1);CAL.focus=CAL.view+'-01';calDraw();calPlace();return}
+ if(a==='prevY'||a==='nextY'){CAL.view=calPlusM(CAL.view,a==='prevY'?-12:12);calDraw();return}
+ if(a==='mode'){CAL.mode=CAL.mode==='day'?'month':'day';calDraw();calPlace();calFocus();return}
+ if(a==='clear'){calPick('');return}
+ if(a==='close'){calClose(true)}}
+function calKeys(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();calClose(true);return}
+ const day=CAL.mode==='day',mv={ArrowLeft:-1,ArrowRight:1,ArrowUp:day?-7:-3,ArrowDown:day?7:3}[e.key];
+ if(mv===undefined&&!['PageUp','PageDown','Home','End'].includes(e.key))return;
+ if(!e.target.closest('.cal-g,.cal-m'))return;e.preventDefault();
+ if(day){let f=CAL.focus;if(mv!==undefined)f=iso(new Date(D(f).getTime()+mv*864e5));else if(e.key==='PageUp'||e.key==='PageDown'){const n=calPlusM(f,(e.key==='PageUp'?-1:1)*(e.shiftKey?12:1)),dd=Math.min(+f.slice(8),new Date(Date.UTC(+n.slice(0,4),+n.slice(5,7),0)).getUTCDate());f=n+'-'+String(dd).padStart(2,'0')}
+  else{const w=(D(f).getUTCDay()+6)%7;f=iso(new Date(D(f).getTime()+(e.key==='Home'?-w:6-w)*864e5))}
+  CAL.focus=f;if(f.slice(0,7)!==CAL.view)CAL.view=f.slice(0,7);calDraw();calFocus()}
+ else{const m=calPlusM(CAL.focus,mv!==undefined?mv:(e.key==='PageUp'?-12:e.key==='PageDown'?12:0));CAL.focus=m+'-01';CAL.view=m.slice(0,4)+CAL.view.slice(4);if(m.slice(0,4)!==CAL.view.slice(0,4))CAL.view=m;calDraw();calFocus()}}
+const calIsField=t=>t&&t.matches&&t.matches('input[type=date],input[type=month]')&&!t.closest('#sbx-bar');
+document.addEventListener('pointerdown',e=>{const t=e.target;
+ if(calIsField(t)){if(t.disabled||t.readOnly)return;e.preventDefault();if(CAL.el&&calInp()===t){calClose();return}const touch=e.pointerType!=='mouse';if(touch){t.readOnly=true;t.setAttribute('data-cal-ro','1')}else t.focus({preventScroll:true});calOpen(t,touch,touch);return}
+ if(CAL.el&&!CAL.el.contains(t))calClose()},true);
+document.addEventListener('keydown',e=>{const t=e.target;
+ if(CAL.el&&e.key==='Escape'){e.preventDefault();e.stopPropagation();calClose(true);return}
+ if(calIsField(t)&&CAL.el&&e.key==='ArrowDown'&&!e.altKey){e.preventDefault();calFocus();return}
+ if(calIsField(t)&&!CAL.el&&(e.key==='Enter'||e.key===' '||e.key==='F4'||(e.altKey&&e.key==='ArrowDown'))){e.preventDefault();calOpen(t,true)}},true);
+document.addEventListener('focusout',e=>{if(!CAL.el)return;setTimeout(()=>{const a=document.activeElement;if(CAL.el&&a&&a!==document.body&&!CAL.el.contains(a)&&a!==calInp())calClose()},0)});
+addEventListener('resize',()=>{if(CAL.el)calPlace()});addEventListener('scroll',()=>{if(CAL.el)calPlace()},true);
+addEventListener('hashchange',()=>calClose());
+new MutationObserver(()=>{if(CAL.el&&!CAL.el.isConnected)return;if(CAL.el)requestAnimationFrame(calPlace)}).observe(document.body,{childList:true,subtree:true});
 render();
 }
 </script>
